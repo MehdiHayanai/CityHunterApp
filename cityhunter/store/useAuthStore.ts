@@ -51,6 +51,7 @@ interface AuthState {
   login: (credentials: any) => Promise<void>;
   logout: () => void;
   checkAuth: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -127,6 +128,24 @@ export const useAuthStore = create<AuthState>((set) => ({
       // Token probably invalid/expired
       Cookies.remove('access_token');
       set({ user: null, isAuthenticated: false, isLoading: false });
+    }
+  },
+
+  refreshUser: async () => {
+    try {
+      const userData = await authService.getMe();
+      
+      let levels: LevelNode[] = [];
+      try {
+        levels = await GamificationService.getLevels();
+      } catch (e) {
+        console.warn("Failed to fetch levels during refresh, using defaults");
+      }
+
+      const mappedUser = mapBackendToUser(userData, levels);
+      set({ user: mappedUser });
+    } catch (error) {
+      console.error("Failed to refresh user data:", error);
     }
   }
 }));

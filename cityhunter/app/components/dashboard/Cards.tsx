@@ -222,11 +222,12 @@ interface DraggableWalkStopProps {
   count: number;
   isExcluded: boolean;
   isExpanded: boolean;
+  isVisited?: boolean;
   onToggle: (id: number | string) => void;
   onClick: () => void;
 }
 
-export const DraggableWalkStop = ({ item, count, isExcluded, isExpanded, onToggle, onClick }: DraggableWalkStopProps) => {
+export const DraggableWalkStop = ({ item, count, isExcluded, isExpanded, isVisited, onToggle, onClick }: DraggableWalkStopProps) => {
   const {
       attributes,
       listeners,
@@ -276,7 +277,14 @@ export const DraggableWalkStop = ({ item, count, isExcluded, isExpanded, onToggl
             </div>
 
             <div className="flex-1 min-w-0">
-                <h4 className={`text-sm font-bold truncate ${isExcluded ? 'line-through text-secondary' : 'text-primary'}`}>{item.name}</h4>
+                <div className="flex items-center gap-2">
+                    <h4 className={`text-sm font-bold truncate ${isExcluded ? 'line-through text-secondary' : 'text-primary'}`}>{item.name}</h4>
+                    {isVisited && (
+                        <span className="flex items-center gap-1 text-[8px] font-black text-accent bg-accent/10 px-1.5 py-0.5 rounded border border-accent/20 tracking-tighter uppercase whitespace-nowrap">
+                            <i className="fa-solid fa-circle-check"></i> VISITED
+                        </span>
+                    )}
+                </div>
                 <p className="text-[10px] text-secondary truncate">{item.type}</p>
             </div>
 

@@ -7,10 +7,15 @@ import { getLorem } from '../../constants/dashboard-constants';
 import { POIService } from '../../services/poi';
 import { ExperienceQuiz } from '../../components/experience/ExperienceQuiz';
 import { QuizService, QuizResponse, AnswerResponse } from '../../services/quiz';
+import { useDashboardContext } from '../../context/DashboardContext';
+import { getDistanceFromLatLonInKm } from '../../utils/geo';
+import { usePopup } from '../../context/PopupContext';
 
 export default function ExperiencePage() {
     const params = useParams();
     const router = useRouter();
+    const { questState } = useDashboardContext();
+    const { showAlert } = usePopup();
     const id = params.id as string;
 
     const [item, setItem] = useState<any>(null);
@@ -25,6 +30,23 @@ export default function ExperiencePage() {
     // Quiz State
     const [currentQuiz, setCurrentQuiz] = useState<QuizResponse | null>(null);
     const [quizLoading, setQuizLoading] = useState(false);
+
+    // Proximity Calculation
+    const [isCloseEnough, setIsCloseEnough] = useState(false);
+    const [distance, setDistance] = useState<number | null>(null);
+
+    useEffect(() => {
+        if (questState.userLocation && item) {
+            const d = getDistanceFromLatLonInKm(
+                questState.userLocation.lat,
+                questState.userLocation.lng,
+                item.lat,
+                item.lng
+            );
+            setDistance(d);
+            setIsCloseEnough(d <= 0.1); // 100 meters threshold
+        }
+    }, [questState.userLocation, item]);
 
     useEffect(() => {
         async function fetchPOI() {
@@ -79,8 +101,7 @@ export default function ExperiencePage() {
             setCurrentQuiz(quiz);
         } catch (error) {
             console.error("Failed to fetch next quiz:", error);
-            // Show error in UI temporarily or via simple alert for now
-            alert("Failed to access node securely. Authentication required.");
+            showAlert("ACCESS DENIED", "Failed to access node securely. Neural authentication required.", 'danger');
         } finally {
             setQuizLoading(false);
         }
@@ -319,6 +340,7 @@ export default function ExperiencePage() {
                             onStart={fetchNextQuiz}
                             onAnswer={handleAnswerSubmission}
                             onNext={fetchNextQuiz}
+                            isCloseEnough={isCloseEnough}
                         />
                     </div>
                 )}

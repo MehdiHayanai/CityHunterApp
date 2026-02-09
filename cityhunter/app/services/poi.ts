@@ -1,4 +1,4 @@
-import { fetchWithAuth } from "../lib/api";
+import { fetchWithAuth } from "@/app/lib/api";
 
 export type POIType = 'monument' | 'event';
 

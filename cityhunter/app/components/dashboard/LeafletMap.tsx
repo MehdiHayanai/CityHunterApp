@@ -23,17 +23,22 @@ export default function LeafletMap({ items, selectedId, walkPath, isCreatingWalk
   const mapInstance = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const polylineRef = useRef<L.Polyline | null>(null);
+  const lastStopIdsRef = useRef<string>('');
   
   const { theme } = useThemeContext();
+  const { mapCenter: contextCenter, setMapCenter: setContextCenter, mapZoom: contextZoom, setMapZoom: setContextZoom } = useDashboardContext();
   const isDark = theme === "dark";
 
   useEffect(() => {
     // 1. Init Map
     if (!mapInstance.current && mapContainer.current) {
+      const initialCenter = contextCenter ? [contextCenter.lat, contextCenter.lng] : [48.8566, 2.3522];
+      const initialZoom = contextZoom || 13;
+
       mapInstance.current = L.map(mapContainer.current, {
         zoomControl: false,
         attributionControl: false
-      }).setView([48.8566, 2.3522], 13);
+      }).setView(initialCenter as L.LatLngExpression, initialZoom);
 
       L.control.zoom({ position: 'topright' }).addTo(mapInstance.current);
     }
@@ -189,11 +194,13 @@ export default function LeafletMap({ items, selectedId, walkPath, isCreatingWalk
       markersRef.current.push(marker);
     });
 
-    // 4. Polylines
+    // 4. Polylines & Auto-zoom Guard
     if (polylineRef.current) {
       map.removeLayer(polylineRef.current);
       polylineRef.current = null;
     }
+ 
+    const currentStopIds = walkPath?.map(p => p.id).join(',') || '';
 
     if (walkPath && walkPath.length > 1) {
       console.log("[DEBUG] Rendering Walk Line for stops:", walkPath.map(p => p.name));
@@ -206,7 +213,14 @@ export default function LeafletMap({ items, selectedId, walkPath, isCreatingWalk
         lineCap: 'round'
       }).addTo(map);
       
-      map.fitBounds(polylineRef.current.getBounds(), { padding: [50, 50] });
+      // ONLY fitBounds if the stop list has CHANGED
+      if (currentStopIds !== lastStopIdsRef.current) {
+          console.log("[MAP] Walk changed, fitting bounds");
+          map.fitBounds(polylineRef.current.getBounds(), { padding: [50, 50] });
+          lastStopIdsRef.current = currentStopIds;
+      }
+    } else {
+        lastStopIdsRef.current = '';
     }
 
     // 5. Global Listener for Popup Buttons (React Router Integration)
@@ -358,8 +372,22 @@ export default function LeafletMap({ items, selectedId, walkPath, isCreatingWalk
 
   // --- SEARCH AREA & MAP EVENTS ---
   const { fetchPoisForLocation, isLoading } = useDashboardContext();
-  const [mapCenter, setMapCenter] = useState<{lat: number, lng: number} | null>(null);
   const [hasMoved, setHasMoved] = useState(false);
+  
+  // Use a ref to track the "current" context values to avoid stale closures in event listeners
+  // and to provide a guard against redundant updates.
+  const currentContextRef = useRef({ lat: contextCenter?.lat, lng: contextCenter?.lng, zoom: contextZoom });
+  
+  useEffect(() => {
+    currentContextRef.current = { lat: contextCenter?.lat, lng: contextCenter?.lng, zoom: contextZoom };
+  }, [contextCenter, contextZoom]);
+
+  // Center on user location if no persisted center
+  useEffect(() => {
+      if (questState.userLocation && !contextCenter && mapInstance.current) {
+          mapInstance.current.setView([questState.userLocation.lat, questState.userLocation.lng], 13);
+      }
+  }, [questState.userLocation, contextCenter]);
 
   useEffect(() => {
     const map = mapInstance.current;
@@ -367,17 +395,28 @@ export default function LeafletMap({ items, selectedId, walkPath, isCreatingWalk
 
     const onMoveEnd = () => {
         const center = map.getCenter();
-        setMapCenter({ lat: center.lat, lng: center.lng });
+        const zoom = map.getZoom();
+        
+        // Guard: Only update if the change is significant (to avoid micro-jitter loops)
+        // or if values actually changed from what we have in context.
+        const latDiff = Math.abs(center.lat - (currentContextRef.current.lat || 0));
+        const lngDiff = Math.abs(center.lng - (currentContextRef.current.lng || 0));
+        const zoomDiff = Math.abs(zoom - (currentContextRef.current.zoom || 0));
+        
+        if (latDiff > 0.00001 || lngDiff > 0.00001 || zoomDiff > 0.1) {
+            setContextCenter({ lat: center.lat, lng: center.lng });
+            setContextZoom(zoom);
+        }
         setHasMoved(true);
     };
 
     map.on('moveend', onMoveEnd);
     return () => { map.off('moveend', onMoveEnd); };
-  }, [mapInstance.current]); // Re-bind if instance changes (rare)
+  }, [mapInstance.current, setContextCenter, setContextZoom]); // setContextCenter/Zoom are stable from context
 
   const handleSearchArea = () => {
       const map = mapInstance.current;
-      if (map && mapCenter) {
+      if (map && contextCenter) {
           // Calculate radius based on visible bounds
           const bounds = map.getBounds();
           const northEast = bounds.getNorthEast();
@@ -387,7 +426,7 @@ export default function LeafletMap({ items, selectedId, walkPath, isCreatingWalk
           
           console.log(`[SEARCH] Radius calculated from view: ${Math.round(radiusMeters)}m`);
           
-          fetchPoisForLocation(mapCenter.lat, mapCenter.lng, Math.round(radiusMeters));
+          fetchPoisForLocation(contextCenter.lat, contextCenter.lng, Math.round(radiusMeters));
           setHasMoved(false); // Reset button state
       }
   };

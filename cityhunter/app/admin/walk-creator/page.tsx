@@ -8,6 +8,7 @@ import { POI, POIService, POIBase } from '@/app/services/poi';
 import ItineraryCanvas from './components/ItineraryCanvas';
 import PoiSidebar from './components/PoiSidebar';
 import { WalkService } from '@/app/services/walk';
+import { useDashboardContext } from '@/app/context/DashboardContext';
 
 // DND Kit
 import { 
@@ -27,6 +28,7 @@ import WalkMapWrapper from './components/WalkMapWrapper';
 export default function WalkCreatorPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
+    const { retryLoading } = useDashboardContext();
     const editId = searchParams.get('id');
     
     // Wizard State
@@ -146,9 +148,12 @@ export default function WalkCreatorPage() {
             setIsSaving(false);
             setShowSuccess(true);
             
+            // Refetch walks in context before redirecting
+            retryLoading();
+            
             // Redirect after brief "Success" UX
             setTimeout(() => {
-                router.push('/admin?refresh=' + Date.now());
+                router.push('/dashboard');
             }, 2500);
 
         } catch (err: any) {

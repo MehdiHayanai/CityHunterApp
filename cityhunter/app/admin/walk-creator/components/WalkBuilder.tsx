@@ -16,9 +16,11 @@ import { POIService, POIBase } from '@/app/services/poi';
 import { WalkService } from '@/app/services/walks';
 import PoiSidebar from './PoiSidebar';
 import ItineraryCanvas from './ItineraryCanvas';
+import { usePopup } from '@/app/context/PopupContext';
 
 export default function WalkBuilder() {
-  const [pois, setPois] = useState<POIBase[]>([]);
+    const { showAlert } = usePopup();
+    const [pois, setPois] = useState<POIBase[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activePoi, setActivePoi] = useState<POIBase | null>(null);
   
@@ -74,29 +76,29 @@ export default function WalkBuilder() {
   };
 
   const handleSave = async () => {
-      if (!walkTitle) {
-          alert('Please enter a walk title');
-          return;
-      }
-      if (itinerary.length < 2) {
-          alert('A walk must have at least 2 stops');
-          return;
-      }
+       if (!walkTitle) {
+           showAlert("DATA MISSING", "Please enter a walk title before initializing the sequence.", 'warning');
+           return;
+       }
+       if (itinerary.length < 2) {
+           showAlert("INSUFFICIENT STOPS", "A walk must have at least 2 stops to establish a valid route.", 'warning');
+           return;
+       }
 
-      setSaving(true);
-      try {
-          await WalkService.createWalk({
-              title: walkTitle,
-              description: walkDescription,
-              stops: itinerary.map(i => i.poi.id!) 
-          });
-          alert('Walk saved successfully!');
-      } catch (e) {
-          console.error(e);
-          alert('Failed to save walk');
-      } finally {
-          setSaving(false);
-      }
+       setSaving(true);
+       try {
+           await WalkService.createWalk({
+               title: walkTitle,
+               description: walkDescription,
+               stops: itinerary.map(i => i.poi.id!) 
+           });
+           showAlert("SECTOR SAVED", "The walk has been successfully archived in the grid.", 'success');
+       } catch (e) {
+           console.error(e);
+           showAlert("SAVE FAILED", "Network interference detected. Failed to archive walk.", 'danger');
+       } finally {
+           setSaving(false);
+       }
   };
 
   return (

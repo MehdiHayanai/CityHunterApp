@@ -4,11 +4,11 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import AdminTable from "./components/AdminTable";
 import POIModal from "./components/POIModal";
-import ConfirmationModal from "./components/ConfirmationModal";
 import Toast from "../components/Toast";
 import { DashboardItem, Walk } from "../interfaces/dashboard";
 import { POIService } from "../services/poi";
 import { useAuthStore } from "../../store/useAuthStore";
+import { usePopup } from "../context/PopupContext";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -23,15 +23,9 @@ export default function AdminPage() {
   const [showPOIModal, setShowPOIModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<DashboardItem | Walk | null>(null);
 
-  // Confirmation & Toast State
-  const [confirmState, setConfirmState] = useState({
-      isOpen: false,
-      title: '',
-      message: '',
-      itemsToDelete: [] as any[], 
-      isBulk: false
-  });
-  const [isDeleting, setIsDeleting] = useState(false);
+  const { showAlert, showConfirm, setPopupLoading, closePopup } = usePopup();
+
+  // Toast State
   const [toast, setToast] = useState<{isOpen: boolean, message: string, type: 'success' | 'error' | 'info'}>({
       isOpen: false,
       message: '',
@@ -139,34 +133,10 @@ export default function AdminPage() {
       }
   };
 
-  // 1. Initial Delete Click (Single)
-  const handleDeleteClick = (item: any) => {
-      setConfirmState({
-          isOpen: true,
-          title: `Delete ${activeTab}?`,
-          message: `Are you sure you want to delete "${item.name}"?`,
-          itemsToDelete: [item],
-          isBulk: false
-      });
-  };
-
-  // 2. Initial Bulk Delete Click
-  const handleBulkDeleteClick = (items: any[]) => {
-      setConfirmState({
-          isOpen: true,
-          title: `Delete ${items.length} ${activeTab}s?`,
-          message: `Are you sure you want to delete these ${items.length} items? This action cannot be undone.`,
-          itemsToDelete: items,
-          isBulk: true
-      });
-  };
-
-  // 3. Execute Delete (Confirmed)
-  const executeDelete = async () => {
-      setIsDeleting(true);
+  // 1. Unified Delete Logic
+  const performDelete = async (items: any[]) => {
+      setPopupLoading(true);
       try {
-          const items = confirmState.itemsToDelete;
-          
           await Promise.all(items.map(async (item) => {
               if (activeTab === 'walk') {
                   await POIService.deleteWalk(String(item.id));
@@ -177,14 +147,33 @@ export default function AdminPage() {
           
           await loadData();
           showToast(`Successfully deleted ${items.length} item(s)`);
-          setConfirmState(prev => ({ ...prev, isOpen: false }));
+          closePopup();
       } catch (e: any) {
           console.error("Delete failed:", e);
           const msg = e instanceof Error ? e.message : "Failed to delete item(s)";
           showToast(msg, "error");
-      } finally {
-          setIsDeleting(false);
+          setPopupLoading(false);
       }
+  };
+
+  const handleDeleteClick = (item: any) => {
+      showConfirm(
+          `DELETE ${activeTab.toUpperCase()}?`,
+          `Are you sure you want to sever the link for "${item.name}"? This action is permanent.`,
+          () => performDelete([item]),
+          'danger',
+          'DELETE'
+      );
+  };
+
+  const handleBulkDeleteClick = (items: any[]) => {
+      showConfirm(
+          `BULK SEVERANCE?`,
+          `Are you sure you want to delete these ${items.length} assets? Data recovery will be impossible.`,
+          () => performDelete(items),
+          'danger',
+          'SEVER ALL'
+      );
   };
 
   const handleSavePOI = async (data: any) => {
@@ -286,17 +275,6 @@ export default function AdminPage() {
         />
       )}
 
-      {/* Confirmation Modal */}
-      <ConfirmationModal
-          isOpen={confirmState.isOpen}
-          title={confirmState.title}
-          message={confirmState.message}
-          onConfirm={executeDelete}
-          onCancel={() => setConfirmState(prev => ({ ...prev, isOpen: false }))}
-          isLoading={isDeleting}
-          confirmText="Delete"
-          variant="danger"
-      />
 
       {/* Toast */}
       {toast.isOpen && (

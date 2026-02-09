@@ -1,4 +1,4 @@
-import { fetchWithAuth } from "../lib/api";
+import { fetchWithAuth } from "@/app/lib/api";
 import { LoginCredentials, AuthResponse, RegisterData } from "../types/auth"; // Need to define types
 
 // Temporary types until strictly defined in a shared type file

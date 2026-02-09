@@ -1,4 +1,4 @@
-import { fetchWithAuth } from "../lib/api";
+import { fetchWithAuth } from "@/app/lib/api";
 import { ActivityFeedItem, Friendship } from "../interfaces/social";
 
 export const socialService = {

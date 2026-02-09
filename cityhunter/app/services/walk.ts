@@ -1,4 +1,4 @@
-import { fetchWithAuth } from "../lib/api";
+import { fetchWithAuth } from "@/app/lib/api";
 import { POIService } from '@/app/services/poi';
 
 export interface Walk {

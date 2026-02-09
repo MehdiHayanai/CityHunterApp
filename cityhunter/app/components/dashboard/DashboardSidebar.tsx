@@ -24,6 +24,7 @@ import { CATEGORIES, getItemById } from "../../constants/dashboard-constants";
 import { Walk, DashboardItem } from "../../interfaces/dashboard";
 import { useDashboardContext } from "../../context/DashboardContext";
 import { QuestPersistence } from "../../utils/quest-persistence";
+import { usePopup } from "../../context/PopupContext";
 
 interface DashboardSidebarProps {
   filteredItems: DashboardItem[];
@@ -46,8 +47,11 @@ export default function DashboardSidebar({ filteredItems }: DashboardSidebarProp
       setSelectedMonumentId, selectedMonumentId,
       setMobileView,
       monuments,
-      events
+      events,
+      retryLoading,
+      isLoading: isDataLoading
   } = useDashboardContext();
+  const { showAlert, showConfirm } = usePopup();
 
   // Local State
   const [newWalkName, setNewWalkName] = useState('');
@@ -153,11 +157,22 @@ export default function DashboardSidebar({ filteredItems }: DashboardSidebarProp
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
-                    <h2 className="text-2xl md:text-3xl font-black mb-2 tracking-tight block">
+                    <h2 className="text-2xl md:text-3xl font-black mb-2 tracking-tight flex items-center gap-2">
                         {activeTab === 'Walk' && activeWalk ? 'Route Planner' : 
                          activeTab === 'Walk' && isCreatingWalk ? 'Create Route' :
                          activeTab === 'Walk' ? 'Available Routes' :
                          activeTab === 'Monument' ? 'City Monuments' : 'Live Events'}
+                         
+                        {!activeWalk && !isCreatingWalk && (
+                             <button 
+                                 onClick={retryLoading}
+                                 className={`p-1.5 rounded-full hover:bg-white/10 text-secondary transition-all ${isDataLoading ? 'animate-spin text-accent' : 'hover:text-accent'}`}
+                                 title="Refresh content"
+                                 disabled={isDataLoading}
+                             >
+                                 <i className="fa-solid fa-rotate text-sm"></i>
+                             </button>
+                        )}
                     </h2>
                     <p className="text-secondary text-sm font-mono block">
                         {activeTab === 'Walk' && activeWalk ? `Editing: ${activeWalk.name}` :
@@ -168,9 +183,9 @@ export default function DashboardSidebar({ filteredItems }: DashboardSidebarProp
                 {activeWalk && (
                      <button 
                         onClick={() => setActiveWalk(null)}
-                        className="text-xs font-bold text-accent hover:underline"
+                        className="text-xs font-bold text-accent hover:underline flex items-center gap-1"
                      >
-                        <i className="fa-solid fa-arrow-left mr-1"></i> BACK
+                        <i className="fa-solid fa-arrow-left"></i> BACK
                      </button>
                 )}
             </div>
@@ -326,12 +341,40 @@ export default function DashboardSidebar({ filteredItems }: DashboardSidebarProp
                                              <i className="fa-solid fa-satellite-dish text-accent"></i>
                                              <span className="text-xs font-black text-accent tracking-widest uppercase">UPLINK ESTABLISHED</span>
                                         </div>
-                                        <button 
-                                            onClick={() => updateQuestState({ isActive: false, activeWalkId: null })}
-                                            className="text-[10px] font-bold text-red-500 hover:text-red-400 border border-red-500/20 px-2 py-1 rounded hover:bg-red-500/10 transition-colors"
-                                        >
-                                            PAUSE (SAVE)
-                                        </button>
+                                        <div className="flex gap-2">
+                                            <button 
+                                                onClick={() => updateQuestState({ isActive: false, activeWalkId: null })}
+                                                className="text-[10px] font-bold text-secondary hover:text-primary transition-colors uppercase border border-divider/10 px-2 py-1 rounded hover:bg-white/5"
+                                            >
+                                                PAUSE
+                                            </button>
+                                            <button 
+                                                onClick={() => {
+                                                    showConfirm(
+                                                        "ABORT MISSION?", 
+                                                        "This will sever the neural link and reset local progress.",
+                                                        () => {
+                                                            if (activeWalk) QuestPersistence.clearQuestState(activeWalk.id);
+                                                            updateQuestState({
+                                                                isActive: false,
+                                                                activeWalkId: null,
+                                                                currentStopIndex: 0,
+                                                                pendingEncounterId: null,
+                                                                showQuiz: false,
+                                                                xpGained: 0,
+                                                                completedStopIds: []
+                                                            });
+                                                        },
+                                                        'danger',
+                                                        'SEVER LINK',
+                                                        'STAY CONNECTED'
+                                                    );
+                                                }}
+                                                className="text-[10px] font-bold text-red-500 hover:text-red-400 border border-red-500/20 px-2 py-1 rounded hover:bg-red-500/10 transition-colors uppercase"
+                                            >
+                                                ABORT
+                                            </button>
+                                        </div>
                                     </div>
                                     <div className="text-xs text-secondary font-mono flex justify-between">
                                         <span>Target: STOP #{questState.currentStopIndex + 1}</span>
@@ -376,10 +419,17 @@ export default function DashboardSidebar({ filteredItems }: DashboardSidebarProp
                                     {QuestPersistence.loadQuestState(activeWalk.id) && (
                                         <button
                                             onClick={() => {
-                                                if (confirm("Are you sure you want to restart? All progress will be lost.")) {
-                                                    QuestPersistence.clearQuestState(activeWalk.id);
-                                                    updateQuestState({ activeWalkId: null }); 
-                                                }
+                                                showConfirm(
+                                                    "RESTART MISSION?",
+                                                    "This will wipe all current sector progress. Do you wish to initialize from zero?",
+                                                    () => {
+                                                        QuestPersistence.clearQuestState(activeWalk.id);
+                                                        updateQuestState({ activeWalkId: null }); 
+                                                    },
+                                                    'warning',
+                                                    'INITIALIZE',
+                                                    'RESUME'
+                                                );
                                             }}
                                             className="w-full py-2 bg-transparent text-secondary text-[10px] font-bold tracking-widest hover:text-red-400 transition-colors uppercase"
                                         >
@@ -432,6 +482,7 @@ export default function DashboardSidebar({ filteredItems }: DashboardSidebarProp
                                                     item={item} 
                                                     count={index + 1}
                                                     isExcluded={isExcluded}
+                                                    isVisited={questState.completedStopIds.includes(item.id)}
                                                     isExpanded={expandedStopId === id}
                                                     onClick={() => setExpandedStopId(expandedStopId === id ? null : id)}
                                                     onToggle={(id) => {
