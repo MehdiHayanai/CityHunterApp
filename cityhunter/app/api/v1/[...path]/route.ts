@@ -94,7 +94,17 @@ async function handleRequest(
         });
         clearTimeout(timeoutId);
 
-        // Get response data
+        // Handle 204 No Content - cannot have a body
+        if (response.status === 204) {
+          return new NextResponse(null, {
+            status: 204,
+            headers: {
+              'Content-Type': response.headers.get('Content-Type') || 'application/json',
+            },
+          });
+        }
+
+        // Get response data for other status codes
         const data = await response.text();
         
         // Return the response with the same status code

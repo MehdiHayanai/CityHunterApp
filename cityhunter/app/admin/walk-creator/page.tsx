@@ -62,15 +62,47 @@ export default function WalkCreatorPage() {
         // If in edit mode, load the existing walk
         if (editId) {
             WalkService.getWalk(editId).then(walk => {
+                console.log('[WalkCreator] Loaded walk for editing:', walk);
+                
                 setTitle(walk.title || walk.name || '');
                 setDescription(walk.description || walk.desc || '');
-                const initialStops = (walk.stops || []).map((stop: any) => ({
-                    id: `${stop.id || stop._id}-${Math.random().toString(36).substr(2, 9)}`,
-                    poi: stop
+                
+                // Transform stops to proper POI format
+                // Create SEPARATE instances for pool and itinerary to avoid duplicate keys
+                const transformedStops = (walk.stops || []).map((stop: any, index: number) => {
+                    const transformedPoi = POIService.transformToFrontendPOI(stop);
+                    
+                    console.log('[WalkCreator] Transformed stop:', {
+                        original: stop,
+                        transformed: transformedPoi
+                    });
+                    
+                    return {
+                        transformedPoi,
+                        index
+                    };
+                });
+                
+                // Create unique instances for selection pool
+                const poolStops = transformedStops.map(({ transformedPoi, index }: { transformedPoi: any, index: number }) => ({
+                    id: `pool-${transformedPoi.id}-${index}-${Date.now()}`,
+                    poi: transformedPoi
                 }));
-                // In edit mode, selection pool and itinerary might start the same
-                setSelectionPool(initialStops);
-                setItinerary(initialStops);
+                
+                // Create unique instances for itinerary
+                const itineraryStops = transformedStops.map(({ transformedPoi, index }: { transformedPoi: any, index: number }) => ({
+                    id: `itinerary-${transformedPoi.id}-${index}-${Date.now()}`,
+                    poi: transformedPoi
+                }));
+                
+                console.log('[WalkCreator] Loaded stops:', {
+                    pool: poolStops,
+                    itinerary: itineraryStops
+                });
+                
+                // In edit mode, both pool and itinerary start with existing stops
+                setSelectionPool(poolStops);
+                setItinerary(itineraryStops);
             }).catch(err => {
                 console.error("Failed to load walk for editing:", err);
                 setError("Failed to initialize mission data.");

@@ -39,6 +39,11 @@ export async function fetchWithAuth(endpoint: string, options: FetchOptions = {}
       throw new Error(errorData.detail || `API Error: ${response.statusText} (${response.status})`);
     }
 
+    // Handle 204 No Content - no body to parse
+    if (response.status === 204) {
+      return null;
+    }
+
     return response.json();
   } catch (error: any) {
     clearTimeout(id);
