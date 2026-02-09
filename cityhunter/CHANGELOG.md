@@ -1,7 +1,62 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+
 ## [unreleased]
+
+### Added
+- **Level-Up Animation System**: Implemented stunning full-screen celebration animation when users level up.
+    - **LevelUpAnimation Component**: Created with Framer Motion featuring radial glow effects, rotating rings, pulsing inner glow, and 12-particle burst effects.
+    - **Auto-Detection**: Auth store now tracks level changes and automatically triggers animation.
+    - **Dashboard Integration**: Animation displays globally across entire dashboard.
+    - **Cyberpunk Aesthetic**: Themed with accent colors, smooth spring animations, and 4-second auto-dismiss.
+- **Monument Search Pricing**: Enhanced `search_monuments` to include pricing information from Events.
+    - **POI Search**: Now searches all POI types (Monuments + Events) to capture pricing data.
+    - **Formatted Output**: Pricing and ticket links displayed in monument search results.
+    - **Gemini Integration**: Updated MonumentExpert agent to use Gemini 2.0 Flash and request pricing info.
+
+### Fixed
+- **Delete Functionality**: Completely overhauled delete operations for POIs and Walks.
+    - **Frontend Loading State**: Fixed popup stuck in loading state after successful deletions using `finally` block.
+    - **404 Handling**: Gracefully handle already-deleted items by treating 404 as success case.
+    - **Backend Error Handling**: Added comprehensive try-catch blocks with detailed logging.
+    - **Referential Integrity**: POI deletion now checks if POI is used in walks and provides informative error messages.
+    - **API Proxy 204**: Fixed proxy to properly handle 204 No Content responses without body.
+    - **fetchWithAuth 204**: Fixed JSON parse error by returning null for 204 status codes.
+- **Walk Editor Loading**: Fixed existing walk data not loading correctly when editing.
+    - **Backend Link Fetching**: Added `fetch_links=True` to `get_walk` and `list_walks` endpoints.
+    - **POI Transformation**: Properly transform backend GeoJSON format to frontend `{lat, lng}` format.
+    - **Duplicate Keys**: Fixed React duplicate key error by creating separate instances for pool and itinerary.
+    - **Unique IDs**: Implemented index-based and timestamp-based unique ID generation.
+- **WalkMap Location Safety**: Added comprehensive null/undefined checks for POI locations.
+    - **Phase A & B Filtering**: Skip POIs without valid location data in grouping logic.
+    - **Polyline Safety**: Filter out invalid stops before drawing route lines.
+    - **Popup HTML**: Use optional chaining for location coordinates in popups.
+    - **Console Warnings**: Log problematic POIs for debugging.
+- **Chat Agent Geo-Proximity**: Rewrote `search_walks` to use location-first approach.
+    - **Nearby POIs First**: Find POIs near user via `$nearSphere` geo query.
+    - **Walk Matching**: Find walks containing those nearby POIs.
+    - **Rich Summaries**: Return which stops are nearby and total stop count.
+    - **Configurable Radius**: Added `radius_m` parameter (default 5000m).
+
+### Improved
+- **Backend Logging**: Added comprehensive debug logging to POI and Walk endpoints.
+    - **Delete Operations**: Track deletion attempts, successes, and failures.
+    - **POI Retrieval**: Log ObjectId conversion and polymorphism attempts.
+    - **Walk Loading**: Log walk fetching and stop counts.
+- **Error Messages**: Enhanced error messages throughout the application.
+    - **POI Deletion**: Show which walks are using a POI when deletion fails.
+    - **Walk Deletion**: Provide specific error details on failure.
+    - **API Errors**: Better error propagation from backend to frontend.
+- **TypeScript Safety**: Added proper type annotations to fix implicit 'any' errors.
+
+### Technical
+- **Dependencies**: Installed `framer-motion` for animation system.
+- **ObjectId Handling**: Improved POI access with proper `PydanticObjectId` conversion.
+- **API Response Handling**: Standardized 204 No Content handling across proxy and client.
+
+## [Previous entries...]
+
 ### Fixed
 - **Quest Simulation**: Fixed "Frozen GPS" issue where simulation mode would block real GPS if dev tools were inactive.
 - **Quest Data**: Fixed `getItemById` failure for backend-loaded quests, ensuring proximity triggers work for database quests.
