@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { ChatService } from "../services/chat";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useDashboardContext } from "../context/DashboardContext";
@@ -234,7 +236,38 @@ export default function ChatInterface({ onClose }: { onClose: () => void }) {
                       : "bg-white/5 text-primary border border-divider/10"
                   }`}
                 >
-                  {msg.content}
+                  {msg.role === "user" ? (
+                    msg.content
+                  ) : (
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                        strong: ({ children }) => <strong className="font-bold text-accent">{children}</strong>,
+                        em: ({ children }) => <em className="italic text-secondary">{children}</em>,
+                        ul: ({ children }) => <ul className="list-disc list-inside space-y-1 my-2">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 my-2">{children}</ol>,
+                        li: ({ children }) => <li className="text-primary">{children}</li>,
+                        code: ({ inline, children, ...props }: any) =>
+                          inline ? (
+                            <code className="bg-black/30 px-1.5 py-0.5 rounded text-accent font-mono text-xs" {...props}>
+                              {children}
+                            </code>
+                          ) : (
+                            <code className="block bg-black/30 p-3 rounded-lg my-2 overflow-x-auto font-mono text-xs" {...props}>
+                              {children}
+                            </code>
+                          ),
+                        a: ({ children, href }) => (
+                          <a href={href} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
+                            {children}
+                          </a>
+                        ),
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  )}
                 </div>
               </div>
             ))}
