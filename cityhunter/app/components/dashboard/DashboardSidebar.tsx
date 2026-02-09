@@ -46,7 +46,9 @@ export default function DashboardSidebar({ filteredItems }: DashboardSidebarProp
       setSelectedMonumentId, selectedMonumentId,
       setMobileView,
       monuments,
-      events
+      events,
+      retryLoading,
+      isLoading: isDataLoading
   } = useDashboardContext();
 
   // Local State
@@ -153,11 +155,22 @@ export default function DashboardSidebar({ filteredItems }: DashboardSidebarProp
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
-                    <h2 className="text-2xl md:text-3xl font-black mb-2 tracking-tight block">
+                    <h2 className="text-2xl md:text-3xl font-black mb-2 tracking-tight flex items-center gap-2">
                         {activeTab === 'Walk' && activeWalk ? 'Route Planner' : 
                          activeTab === 'Walk' && isCreatingWalk ? 'Create Route' :
                          activeTab === 'Walk' ? 'Available Routes' :
                          activeTab === 'Monument' ? 'City Monuments' : 'Live Events'}
+                         
+                        {!activeWalk && !isCreatingWalk && (
+                             <button 
+                                 onClick={retryLoading}
+                                 className={`p-1.5 rounded-full hover:bg-white/10 text-secondary transition-all ${isDataLoading ? 'animate-spin text-accent' : 'hover:text-accent'}`}
+                                 title="Refresh content"
+                                 disabled={isDataLoading}
+                             >
+                                 <i className="fa-solid fa-rotate text-sm"></i>
+                             </button>
+                        )}
                     </h2>
                     <p className="text-secondary text-sm font-mono block">
                         {activeTab === 'Walk' && activeWalk ? `Editing: ${activeWalk.name}` :
@@ -168,9 +181,9 @@ export default function DashboardSidebar({ filteredItems }: DashboardSidebarProp
                 {activeWalk && (
                      <button 
                         onClick={() => setActiveWalk(null)}
-                        className="text-xs font-bold text-accent hover:underline"
+                        className="text-xs font-bold text-accent hover:underline flex items-center gap-1"
                      >
-                        <i className="fa-solid fa-arrow-left mr-1"></i> BACK
+                        <i className="fa-solid fa-arrow-left"></i> BACK
                      </button>
                 )}
             </div>

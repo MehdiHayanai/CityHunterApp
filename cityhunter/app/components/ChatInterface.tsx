@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChatService } from "../services/chat";
 import { useAuthStore } from "../../store/useAuthStore";
+import { useDashboardContext } from "../context/DashboardContext";
 
 interface Message {
   id: string;
@@ -80,7 +81,8 @@ export default function ChatInterface({ onClose }: { onClose: () => void }) {
     if (inputElement) inputElement.focus();
   }, []);
 
-  const handleSend = async () => {
+    const { questState, mapCenter } = useDashboardContext();
+    const handleSend = async () => {
     if (!input.trim() || isLoading) return;
     
     // Ensure we have a session
@@ -101,10 +103,18 @@ export default function ChatInterface({ onClose }: { onClose: () => void }) {
 
     try {
         const userId = user?.id ? String(user.id) : "guest";
-        // TODO: Get real location if available
         const currentSessionId = sessionId || localStorage.getItem(SESSION_ID_KEY) || "temp_session";
         
-        const response = await ChatService.sendMessage(currentSessionId, currentInput, userId);
+        // Contextual Fallback: GPS -> Map Center
+        let userLocation = undefined;
+
+        if (questState.userLocation) {
+            userLocation = { lat: questState.userLocation.lat, lon: questState.userLocation.lng };
+        } else if (mapCenter) {
+            userLocation = { lat: mapCenter.lat, lon: mapCenter.lng };
+        }
+
+        const response = await ChatService.sendMessage(currentSessionId, currentInput, userId, userLocation);
         
         const aiMsg: Message = {
             id: (Date.now() + 1).toString(),

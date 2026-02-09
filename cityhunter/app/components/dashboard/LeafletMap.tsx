@@ -25,15 +25,19 @@ export default function LeafletMap({ items, selectedId, walkPath, isCreatingWalk
   const polylineRef = useRef<L.Polyline | null>(null);
   
   const { theme } = useThemeContext();
+  const { mapCenter: contextCenter, setMapCenter: setContextCenter, mapZoom: contextZoom, setMapZoom: setContextZoom } = useDashboardContext();
   const isDark = theme === "dark";
 
   useEffect(() => {
     // 1. Init Map
     if (!mapInstance.current && mapContainer.current) {
+      const initialCenter = contextCenter ? [contextCenter.lat, contextCenter.lng] : [48.8566, 2.3522];
+      const initialZoom = contextZoom || 13;
+
       mapInstance.current = L.map(mapContainer.current, {
         zoomControl: false,
         attributionControl: false
-      }).setView([48.8566, 2.3522], 13);
+      }).setView(initialCenter as L.LatLngExpression, initialZoom);
 
       L.control.zoom({ position: 'topright' }).addTo(mapInstance.current);
     }
@@ -358,8 +362,14 @@ export default function LeafletMap({ items, selectedId, walkPath, isCreatingWalk
 
   // --- SEARCH AREA & MAP EVENTS ---
   const { fetchPoisForLocation, isLoading } = useDashboardContext();
-  const [mapCenter, setMapCenter] = useState<{lat: number, lng: number} | null>(null);
   const [hasMoved, setHasMoved] = useState(false);
+
+  // Center on user location if no persisted center
+  useEffect(() => {
+      if (questState.userLocation && !contextCenter && mapInstance.current) {
+          mapInstance.current.setView([questState.userLocation.lat, questState.userLocation.lng], 13);
+      }
+  }, [questState.userLocation, contextCenter]);
 
   useEffect(() => {
     const map = mapInstance.current;
@@ -367,17 +377,19 @@ export default function LeafletMap({ items, selectedId, walkPath, isCreatingWalk
 
     const onMoveEnd = () => {
         const center = map.getCenter();
-        setMapCenter({ lat: center.lat, lng: center.lng });
+        const zoom = map.getZoom();
+        setContextCenter({ lat: center.lat, lng: center.lng });
+        setContextZoom(zoom);
         setHasMoved(true);
     };
 
     map.on('moveend', onMoveEnd);
     return () => { map.off('moveend', onMoveEnd); };
-  }, [mapInstance.current]); // Re-bind if instance changes (rare)
+  }, [mapInstance.current, setContextCenter, setContextZoom]); // Re-bind if instance changes (rare)
 
   const handleSearchArea = () => {
       const map = mapInstance.current;
-      if (map && mapCenter) {
+      if (map && contextCenter) {
           // Calculate radius based on visible bounds
           const bounds = map.getBounds();
           const northEast = bounds.getNorthEast();
@@ -387,7 +399,7 @@ export default function LeafletMap({ items, selectedId, walkPath, isCreatingWalk
           
           console.log(`[SEARCH] Radius calculated from view: ${Math.round(radiusMeters)}m`);
           
-          fetchPoisForLocation(mapCenter.lat, mapCenter.lng, Math.round(radiusMeters));
+          fetchPoisForLocation(contextCenter.lat, contextCenter.lng, Math.round(radiusMeters));
           setHasMoved(false); // Reset button state
       }
   };

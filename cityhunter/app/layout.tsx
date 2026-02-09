@@ -9,6 +9,7 @@ import QuestDevTools from "./components/quest/QuestDevTools";
 import QuestEncounterModal from "./components/quest/QuestEncounterModal";
 import QuestCompletionModal from "./components/quest/QuestCompletionModal";
 import QuestProximityPopup from "./components/quest/QuestProximityPopup";
+import LocationInitializer from "./components/LocationInitializer";
 
 
 const inter = Inter({
@@ -48,6 +49,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <DashboardProvider>
+            <LocationInitializer />
             <QuestManager />
             <QuestEncounterModal />
             <QuestCompletionModal />

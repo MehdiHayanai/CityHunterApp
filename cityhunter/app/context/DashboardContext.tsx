@@ -47,6 +47,12 @@ interface DashboardContextType {
   questState: QuestState;
   updateQuestState: (updates: Partial<QuestState>) => void;
 
+  // Map State
+  mapCenter: { lat: number; lng: number } | null;
+  setMapCenter: (center: { lat: number; lng: number } | null) => void;
+  mapZoom: number;
+  setMapZoom: (zoom: number) => void;
+
   // Data
   monuments: any[]; // Using any to avoid circle deps with DashboardItem if it causes issues, but ideally DashboardItem
   events: any[]; 
@@ -93,6 +99,10 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   // Quest State
   const [questState, setQuestState] = useState<QuestState>(INITIAL_QUEST_STATE);
 
+  // Map State Persistence
+  const [mapCenter, setMapCenter] = useState<{lat: number, lng: number} | null>(null);
+  const [mapZoom, setMapZoom] = useState<number>(13);
+
   // 1. AUTO-SAVE: Persist state whenever it changes (if active)
   React.useEffect(() => {
       // Don't save default/empty state over good data
@@ -101,8 +111,28 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       }
   }, [questState]);
 
+  // Map Persistence Effect
+  React.useEffect(() => {
+      if (mapCenter) {
+          localStorage.setItem('cityhunter_map_center', JSON.stringify(mapCenter));
+      }
+      if (mapZoom) {
+          localStorage.setItem('cityhunter_map_zoom', mapZoom.toString());
+      }
+  }, [mapCenter, mapZoom]);
+
   // 1.5 AUTO-RESTORE ON MOUNT
   React.useEffect(() => {
+     // RESTORE MAP POSITION
+     const savedCenter = localStorage.getItem('cityhunter_map_center');
+     const savedZoom = localStorage.getItem('cityhunter_map_zoom');
+     if (savedCenter) {
+         try { setMapCenter(JSON.parse(savedCenter)); } catch(e) {}
+     }
+     if (savedZoom) {
+         setMapZoom(parseInt(savedZoom, 10));
+     }
+
      // A. RESTORE CUSTOM WALKS
      const savedWalks = localStorage.getItem('custom_walks');
      if (savedWalks) {
@@ -445,11 +475,10 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       isCreatingWalk, setIsCreatingWalk,
       newWalkStops, setNewWalkStops,
 
+      mapCenter, setMapCenter,
+      mapZoom, setMapZoom,
+
       // EXPOSE NEW DATA (casted to any or explicit interface update needed)
-      // Since context interface doesn't have monuments/events, let's update it or rely on existing filtered passing?
-      // Wait, filter logic is in page.tsx using CONSTANTS.
-      // Ideally we expose them here so page.tsx can access them.
-      // But for now, let's keep it clean. We need to update context type first.
       monuments,
       events,
       isLoading,
