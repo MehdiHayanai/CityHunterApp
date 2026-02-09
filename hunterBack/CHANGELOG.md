@@ -28,6 +28,17 @@ This is the first major release of CityHunter Backend, marking the completion of
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- **Walks API Endpoints**: Resolved `AsyncIOMotorLatentCommandCursor` error in walks endpoints
+    - **fetch_links Removal**: Removed problematic `fetch_links=True` parameter from `list_walks` and `get_walk` endpoints
+    - **Query Simplification**: Updated endpoints to return basic walk data without automatic link resolution
+    - **Error Prevention**: Eliminated Beanie aggregation pipeline issues causing TypeError exceptions
+    - **API Stability**: Improved reliability of `/api/v1/walks/` and `/api/v1/walks/{id}` endpoints
+
+---
+
 ### Added
 
 #### Authentication & Security

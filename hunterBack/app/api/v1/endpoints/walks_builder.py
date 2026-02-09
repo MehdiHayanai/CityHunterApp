@@ -32,13 +32,13 @@ async def list_walks(
     is_latest: bool = True,
 ):
     """
-    Get all walks with POI stops fully loaded, optionally filtered by status.
+    Get all walks, optionally filtered by status.
     """
     query = {"is_latest": is_latest}
     if status_filter:
         query["status"] = status_filter
 
-    walks = await Walk.find(query, fetch_links=True).to_list()
+    walks = await Walk.find(query).to_list()
     print(f"INFO: Found {len(walks)} Walks")
     return walks
 
@@ -46,10 +46,10 @@ async def list_walks(
 @router.get("/{id}", response_model=Walk)
 async def get_walk(id: str):
     """
-    Get a specific walk by ID with all POI stops fully loaded.
+    Get a specific walk by ID.
     """
     print(f"DEBUG: Fetching walk {id}")
-    walk = await Walk.get(id, fetch_links=True)
+    walk = await Walk.get(id)
     if not walk:
         raise HTTPException(status_code=404, detail="Walk not found")
 
