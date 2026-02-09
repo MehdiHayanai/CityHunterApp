@@ -48,16 +48,19 @@ interface AuthState {
   user: UserProfileData | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  levelUpData: { newLevel: number } | null;
   login: (credentials: any) => Promise<void>;
   logout: () => void;
   checkAuth: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  clearLevelUp: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
   isLoading: true, // Start loading to check auth on mount
+  levelUpData: null,
 
   login: async (credentials) => {
     set({ isLoading: true });
@@ -133,6 +136,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   refreshUser: async () => {
     try {
+      const currentUser = get().user;
       const userData = await authService.getMe();
       
       let levels: LevelNode[] = [];
@@ -143,9 +147,22 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
 
       const mappedUser = mapBackendToUser(userData, levels);
-      set({ user: mappedUser });
+      
+      // Check if level increased
+      if (currentUser && mappedUser.level > currentUser.level) {
+        set({ 
+          user: mappedUser,
+          levelUpData: { newLevel: mappedUser.level }
+        });
+      } else {
+        set({ user: mappedUser });
+      }
     } catch (error) {
       console.error("Failed to refresh user data:", error);
     }
+  },
+
+  clearLevelUp: () => {
+    set({ levelUpData: null });
   }
 }));

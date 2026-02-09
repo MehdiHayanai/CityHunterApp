@@ -117,6 +117,11 @@ export default function WalkMap({ selectedStops, availablePois, onPoisFetched, o
 
         // Phase A: Selected
         selectedStops.forEach((poi, index) => {
+             // Skip POIs without valid location
+             if (!poi.location || typeof poi.location.lat !== 'number' || typeof poi.location.lng !== 'number') {
+                 console.warn(`Skipping POI without valid location:`, poi);
+                 return;
+             }
              const key = `${poi.location.lat.toFixed(5)},${poi.location.lng.toFixed(5)}`;
              if (!groupedPois.has(key)) groupedPois.set(key, { available: [], selected: [] });
              groupedPois.get(key)!.selected.push({ poi, index });
@@ -124,6 +129,11 @@ export default function WalkMap({ selectedStops, availablePois, onPoisFetched, o
 
         // Phase B: Available (KEEP duplicates allowed)
         availablePois.forEach(poi => {
+             // Skip POIs without valid location
+             if (!poi.location || typeof poi.location.lat !== 'number' || typeof poi.location.lng !== 'number') {
+                 console.warn(`Skipping POI without valid location:`, poi);
+                 return;
+             }
              const key = `${poi.location.lat.toFixed(5)},${poi.location.lng.toFixed(5)}`;
              if (!groupedPois.has(key)) groupedPois.set(key, { available: [], selected: [] });
              groupedPois.get(key)!.available.push(poi);
@@ -147,7 +157,7 @@ export default function WalkMap({ selectedStops, availablePois, onPoisFetched, o
                       <div style="padding: 12px; background-color: #121212;">
                           <h3 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700; color: white; line-height: 1.2;">${item.name}</h3>
                           <div style="font-family: 'Roboto Mono'; font-size: 10px; color: #9ca3af; margin-bottom: 10px;">
-                              <i class="fa-solid fa-location-dot"></i> ${item.location.lat.toFixed(4)}, ${item.location.lng.toFixed(4)}
+                              <i class="fa-solid fa-location-dot"></i> ${item.location?.lat?.toFixed(4) || 'N/A'}, ${item.location?.lng?.toFixed(4) || 'N/A'}
                           </div>
                           <button 
                             onclick="window.onAddToPool('${item.id}')"
@@ -251,13 +261,20 @@ export default function WalkMap({ selectedStops, availablePois, onPoisFetched, o
         }
 
         if (selectedStops.length > 1) {
-            const latlngs = selectedStops.map(s => [s.location.lat, s.location.lng] as [number, number]);
-            polylineRef.current = L.polyline(latlngs, {
-                color: '#CCFF00',
-                weight: 3,
-                dashArray: '5, 10',
-                opacity: 0.7
-            }).addTo(map);
+            // Filter out stops without valid location before drawing polyline
+            const validStops = selectedStops.filter(s => 
+                s.location && typeof s.location.lat === 'number' && typeof s.location.lng === 'number'
+            );
+            
+            if (validStops.length > 1) {
+                const latlngs = validStops.map(s => [s.location.lat, s.location.lng] as [number, number]);
+                polylineRef.current = L.polyline(latlngs, {
+                    color: '#CCFF00',
+                    weight: 3,
+                    dashArray: '5, 10',
+                    opacity: 0.7
+                }).addTo(map);
+            }
         }
 
     }, [availablePois, selectedStops]);

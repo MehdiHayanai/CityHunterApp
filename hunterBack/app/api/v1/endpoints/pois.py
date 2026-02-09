@@ -151,9 +151,33 @@ async def delete_poi(id: str):
     """
     Delete a POI.
     """
-    poi = await POI.get(id)
+    print(f"DEBUG: Attempting to delete POI {id}")
+
+    # Try to get the POI using the helper function for better polymorphism
+    poi = await get_poi_by_id(id)
     if not poi:
+        print(f"DEBUG: POI {id} not found")
         raise HTTPException(status_code=404, detail="POI not found")
 
-    await poi.delete()
-    return None
+    # Check if POI is referenced in any walks
+    from app.models.domain.walk import Walk
+
+    walks_using_poi = await Walk.find({"stops.$id": poi.id}).to_list()
+
+    if walks_using_poi:
+        walk_titles = [w.title for w in walks_using_poi[:3]]
+        print(
+            f"WARNING: POI {poi.name} is used in {len(walks_using_poi)} walk(s): {walk_titles}"
+        )
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot delete POI '{poi.name}'. It is referenced in {len(walks_using_poi)} walk(s): {', '.join(walk_titles)}. Remove it from walks first.",
+        )
+
+    try:
+        await poi.delete()
+        print(f"INFO: Successfully deleted POI {poi.name} ({id})")
+        return None
+    except Exception as e:
+        print(f"ERROR: Failed to delete POI {id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete POI: {str(e)}")

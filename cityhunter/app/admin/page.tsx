@@ -137,22 +137,33 @@ export default function AdminPage() {
   const performDelete = async (items: any[]) => {
       setPopupLoading(true);
       try {
-          await Promise.all(items.map(async (item) => {
-              if (activeTab === 'walk') {
-                  await POIService.deleteWalk(String(item.id));
-              } else {
-                  await POIService.deletePOI(String(item.id));
+          const deletePromises = items.map(async (item) => {
+              try {
+                  if (activeTab === 'walk') {
+                      await POIService.deleteWalk(String(item.id));
+                  } else {
+                      await POIService.deletePOI(String(item.id));
+                  }
+              } catch (err: any) {
+                  // If 404, item already deleted - not an error
+                  if (err.message?.includes('404') || err.message?.includes('not found')) {
+                      console.warn(`Item ${item.id} already deleted or not found`);
+                      return; // Continue with other deletions
+                  }
+                  throw err; // Re-throw other errors
               }
-          }));
+          });
           
+          await Promise.all(deletePromises);
           await loadData();
           showToast(`Successfully deleted ${items.length} item(s)`);
-          closePopup();
       } catch (e: any) {
           console.error("Delete failed:", e);
           const msg = e instanceof Error ? e.message : "Failed to delete item(s)";
           showToast(msg, "error");
+      } finally {
           setPopupLoading(false);
+          closePopup();
       }
   };
 
