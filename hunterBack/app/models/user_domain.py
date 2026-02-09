@@ -26,7 +26,7 @@ class UserStats(BaseModel):
 class UserProfile(Document):
     user_id: UUID  # Links to UserIdentity.id
     handle: str
-    role: str  # "user" or "admin"
+    role: str = "user"  # "user" or "admin"
     level: int = 1
     xp: int = 0
     avatar_url: Optional[str] = None
