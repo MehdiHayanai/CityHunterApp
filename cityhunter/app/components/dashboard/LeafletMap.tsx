@@ -363,6 +363,14 @@ export default function LeafletMap({ items, selectedId, walkPath, isCreatingWalk
   // --- SEARCH AREA & MAP EVENTS ---
   const { fetchPoisForLocation, isLoading } = useDashboardContext();
   const [hasMoved, setHasMoved] = useState(false);
+  
+  // Use a ref to track the "current" context values to avoid stale closures in event listeners
+  // and to provide a guard against redundant updates.
+  const currentContextRef = useRef({ lat: contextCenter?.lat, lng: contextCenter?.lng, zoom: contextZoom });
+  
+  useEffect(() => {
+    currentContextRef.current = { lat: contextCenter?.lat, lng: contextCenter?.lng, zoom: contextZoom };
+  }, [contextCenter, contextZoom]);
 
   // Center on user location if no persisted center
   useEffect(() => {
@@ -378,14 +386,23 @@ export default function LeafletMap({ items, selectedId, walkPath, isCreatingWalk
     const onMoveEnd = () => {
         const center = map.getCenter();
         const zoom = map.getZoom();
-        setContextCenter({ lat: center.lat, lng: center.lng });
-        setContextZoom(zoom);
+        
+        // Guard: Only update if the change is significant (to avoid micro-jitter loops)
+        // or if values actually changed from what we have in context.
+        const latDiff = Math.abs(center.lat - (currentContextRef.current.lat || 0));
+        const lngDiff = Math.abs(center.lng - (currentContextRef.current.lng || 0));
+        const zoomDiff = Math.abs(zoom - (currentContextRef.current.zoom || 0));
+        
+        if (latDiff > 0.00001 || lngDiff > 0.00001 || zoomDiff > 0.1) {
+            setContextCenter({ lat: center.lat, lng: center.lng });
+            setContextZoom(zoom);
+        }
         setHasMoved(true);
     };
 
     map.on('moveend', onMoveEnd);
     return () => { map.off('moveend', onMoveEnd); };
-  }, [mapInstance.current, setContextCenter, setContextZoom]); // Re-bind if instance changes (rare)
+  }, [mapInstance.current, setContextCenter, setContextZoom]); // setContextCenter/Zoom are stable from context
 
   const handleSearchArea = () => {
       const map = mapInstance.current;

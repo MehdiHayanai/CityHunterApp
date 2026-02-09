@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 // Removed DnD imports as they moved to Sidebar
 
@@ -85,7 +85,7 @@ export default function Dashboard() {
   }, [activeCategories, searchQuery, activeTab, activeWalk, excludedStopIds, walkStopsOrder, isCreatingWalk, monuments, events]);
 
   // Improved Item Lookup that checks Context (dynamic) and Constants (static)
-  const getAnyItemById = (id: number | string) => {
+  const getAnyItemById = useCallback((id: number | string) => {
       // 1. Check Context (Dynamic Backend Data)
       const contextItem = [...monuments, ...events].find(m => String(m.id) === String(id));
       if (contextItem) return contextItem;
@@ -93,7 +93,25 @@ export default function Dashboard() {
       const staticItem = getItemById(id);
       if (!staticItem) console.warn(`[DEBUG] page.tsx: Item not found for ID: ${id}`);
       return staticItem;
-  };
+  }, [monuments, events]);
+
+  // Memoized Walk Path for the Map
+  const walkPath = useMemo(() => {
+      if (activeTab !== 'Walk') return undefined;
+      
+      if (isCreatingWalk) {
+          return newWalkStops.map(id => getAnyItemById(id)).filter((i): i is DashboardItem => !!i);
+      }
+      
+      if (activeWalk) {
+          const stopsToMap = walkStopsOrder.length > 0 ? walkStopsOrder : activeWalk.stopIds;
+          return stopsToMap
+              .map(id => getAnyItemById(id))
+              .filter((i): i is DashboardItem => !!i && !excludedStopIds.includes(i.id));
+      }
+      
+      return undefined;
+  }, [activeTab, isCreatingWalk, newWalkStops, activeWalk, walkStopsOrder, excludedStopIds, getAnyItemById]);
 
   // Resizing Logic
   const startResizing = (e: React.MouseEvent) => { e.preventDefault(); setIsResizing(true); };
@@ -191,18 +209,7 @@ export default function Dashboard() {
             <LeafletMap 
                 items={filteredItems} 
                 selectedId={selectedMonumentId} 
-                walkPath={
-                    activeTab === 'Walk' 
-                        ? (isCreatingWalk 
-                            ? newWalkStops.map(id => getAnyItemById(id)).filter((i): i is DashboardItem => !!i)
-                            : (activeWalk 
-                                ? (walkStopsOrder.length > 0 ? walkStopsOrder : activeWalk.stopIds)
-                                    .map(id => getAnyItemById(id))
-                                    .filter((i): i is DashboardItem => !!i && !excludedStopIds.includes(i.id))
-                                : undefined)
-                          )
-                        : undefined
-                }
+                walkPath={walkPath}
                 isCreatingWalk={isCreatingWalk}
                 onAddToWalk={(id) => {
                     if (newWalkStops.includes(id)) return;
