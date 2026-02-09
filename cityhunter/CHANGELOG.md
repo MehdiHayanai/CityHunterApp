@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 ## [unreleased]
 
 ### Added
+- **Sign Out Functionality**: Implemented working logout button in profile settings.
+    - **Auth Integration**: Connected sign out button to auth store's logout function.
+    - **Session Cleanup**: Properly removes access token and redirects to login page.
+
+### Fixed
+- **Profile XP Bar**: Removed XP progress bar from friends' profiles.
+    - **Conditional Rendering**: XP bar now only displays when viewing your own profile.
+    - **Privacy Enhancement**: Friends can no longer see detailed XP progress of other users.
+- **Friends Ranking**: Fixed duplicate key error and incorrect user display in friends list.
+    - **Duplicate Prevention**: Profile owner is now filtered from friends list before being added back.
+    - **Identity Logic**: Properly distinguishes between viewing your own profile vs someone else's.
+    - **isMe Flag**: Correctly marks "You" only when viewing your own profile.
+    - **User Data**: Fixed issue where viewing a friend's profile would incorrectly show "Alex Wanderer" instead of logged-in user.
+- **Walks API**: Resolved Beanie aggregation cursor error in walks endpoints.
+    - **fetch_links Removal**: Removed problematic `fetch_links=True` parameter causing AsyncIOMotorLatentCommandCursor errors.
+    - **Simplified Queries**: Updated both `list_walks` and `get_walk` endpoints to fetch basic walk data without automatic link resolution.
+    - **Performance**: Improved API response time by avoiding complex aggregation pipelines.
+
+### Improved
+- **User Experience**: Enhanced profile viewing with proper data isolation between users.
+- **API Stability**: More reliable walks endpoint without aggregation-related crashes.
+
+### Added (Previous)
 - **Level-Up Animation System**: Implemented stunning full-screen celebration animation when users level up.
     - **LevelUpAnimation Component**: Created with Framer Motion featuring radial glow effects, rotating rings, pulsing inner glow, and 12-particle burst effects.
     - **Auto-Detection**: Auth store now tracks level changes and automatically triggers animation.
