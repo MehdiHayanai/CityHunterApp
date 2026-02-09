@@ -19,7 +19,13 @@ All notable changes to this project will be documented in this file.
 - **Access Control**: Implemented a "Registration Closed" warning on the Signup page (`/signup`) to restrict new user registrations.
     - **Warning System**: Enhanced `ComingSoonWrapper` to support configurable icons and colors (e.g., Red/Lock for warnings).
     - **Restriction**: Signup form is now disabled with an explicit message: "This application is currently available to pre-approved users only."
-
+- **Global Popup System**: Replaced all native browser `alert()` and `confirm()` dialogs with a themed, high-fidelity popup system.
+    - **PopupContext**: Created global state management for alerts and confirmations with variant support (danger, warning, info, success).
+    - **SystemPopup Component**: Implemented themed modal with cyberpunk aesthetic, loading states, and smooth animations.
+    - **Loading State Support**: Added `setPopupLoading()` for async operations with spinner and disabled buttons.
+    - **Components Updated**: Migrated 8 components including quest management (`DashboardSidebar`, `QuestEncounterModal`), experience pages (`ExperiencePage`, `ExperienceQuiz`), and admin interfaces (`PoiForm`, `WalkBuilder`, `AdminPage`).
+    - **Admin Refactor**: Removed custom `ConfirmationModal` in favor of unified global system with themed deletion confirmations.
+    - **UX Enhancement**: All user notifications now follow consistent visual language with no jarring native dialogs.
 
 ## [0.0.6] - 2026-02-04
 ### Added

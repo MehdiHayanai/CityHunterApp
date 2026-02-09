@@ -9,7 +9,7 @@ from google.adk.tools.google_search_tool import GoogleSearchTool
 from google.genai import types
 
 from app.core.config import settings
-from app.models.domain.poi import Monument
+from app.models.domain.poi import POI, Monument
 from app.models.domain.walk import Walk
 
 # Setup Logger
@@ -74,34 +74,98 @@ async def search_monuments(
         return "An error occurred while searching for monuments."
 
 
-async def search_walks(query: str, lat: float, lon: float) -> str:
+async def search_walks(query: str, lat: float, lon: float, radius_m: int = 5000) -> str:
     """
-    Searches for curated walks/routes in the database.
+    Searches for walks near the user by first finding nearby monuments/events,
+    then returning walks that include those points of interest.
 
     Args:
-        query: The search term (e.g., "historic", "nature", "city center").
-        lat: Latitude.
-        lon: Longitude.
+        query: Optional search term to filter POIs (e.g., "historic", "museum"). Pass empty string to find all nearby.
+        lat: Latitude of the user's current position.
+        lon: Longitude of the user's current position.
+        radius_m: Search radius in meters (default 5000m).
 
     Returns:
-        A string summary of found walks.
+        A string summary of found walks and the nearby stops they contain.
     """
     try:
-        search_filter = Or(
-            RegEx(Walk.title, query, "i"), RegEx(Walk.description, query, "i")
-        )
-        walks = await Walk.find(search_filter).limit(5).to_list()
+        # Step 1: Find POIs near the user using MongoDB $nearSphere
+        geo_filter = {
+            "location": {
+                "$nearSphere": {
+                    "$geometry": {"type": "Point", "coordinates": [lon, lat]},
+                    "$maxDistance": radius_m,
+                }
+            }
+        }
 
-        if not walks:
-            return f"No walks found matching '{query}'."
+        # Optionally filter by text query on name/description
+        if query and query.strip():
+            geo_filter["$or"] = [
+                {"name": {"$regex": query, "$options": "i"}},
+                {"description": {"$regex": query, "$options": "i"}},
+            ]
 
-        results = []
-        for w in walks:
-            results.append(
-                f"- {w.title} ({w.distance_km}km, {w.difficulty.value}): {w.description[:100]}..."
+        nearby_pois = await POI.find(geo_filter).limit(20).to_list()
+
+        if not nearby_pois:
+            return (
+                f"No monuments or events found within {radius_m}m of your location"
+                + (f" matching '{query}'." if query else ".")
             )
 
-        return "\n".join(results)
+        # Build a quick lookup: poi_id -> poi_name
+        poi_lookup = {poi.id: poi.name for poi in nearby_pois}
+        nearby_poi_ids = list(poi_lookup.keys())
+
+        # Step 2: Find walks that contain at least one of these nearby POIs
+        # Walk.stops is List[Link[POI]] — stored as DBRef or ObjectId in MongoDB
+        walks = await Walk.find(
+            {"stops.$id": {"$in": nearby_poi_ids}},
+            fetch_links=True,
+        ).to_list()
+
+        if not walks:
+            poi_names = ", ".join([p.name for p in nearby_pois[:5]])
+            return (
+                f"Found {len(nearby_pois)} nearby point(s) of interest ({poi_names}), "
+                f"but no curated walks include them yet."
+            )
+
+        # Step 3: Build a rich summary for the LLM
+        results = []
+        for w in walks:
+            # Identify which of the nearby POIs are in this walk
+            walk_stop_ids = set()
+            for stop in w.stops or []:
+                stop_id = stop.id if hasattr(stop, "id") else stop
+                walk_stop_ids.add(stop_id)
+
+            matching_names = [
+                poi_lookup[pid] for pid in nearby_poi_ids if pid in walk_stop_ids
+            ]
+
+            stops_info = ", ".join(matching_names[:4])
+            if len(matching_names) > 4:
+                stops_info += f" (+{len(matching_names) - 4} more)"
+
+            total_stops = len(w.stops) if w.stops else 0
+            duration = (
+                f"{w.estimated_duration_minutes} min"
+                if w.estimated_duration_minutes
+                else "N/A"
+            )
+            distance = f"{w.distance_km} km" if w.distance_km else "N/A"
+
+            results.append(
+                f"- **{w.title}** ({w.difficulty.value}, {distance}, ~{duration})\n"
+                f"  {w.description[:120]}...\n"
+                f"  Nearby stops: {stops_info} ({len(matching_names)}/{total_stops} stops near you)"
+            )
+
+        header = f"Found {len(walks)} walk(s) with stops near your location:\n"
+        return header + "\n".join(results)
+
     except Exception as e:
         logger.error(f"Error searching walks: {e}")
         return "An error occurred while searching for walks."
