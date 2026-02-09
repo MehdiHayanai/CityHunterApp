@@ -4,11 +4,13 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { POIService, POIType } from '@/app/services/poi';
 import { useRouter } from 'next/navigation';
+import { usePopup } from '@/app/context/PopupContext';
 
 const MapPicker = dynamic(() => import('./MapPicker'), { ssr: false, loading: () => <p>Loading Map...</p> });
 
 export default function PoiForm() {
     const router = useRouter();
+    const { showAlert } = usePopup();
     const [type, setType] = useState<POIType>('monument');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -57,7 +59,7 @@ export default function PoiForm() {
                     ticket_link: ticketLink
                 });
             }
-            alert(`${type === 'monument' ? 'Monument' : 'Event'} created successfully!`);
+            showAlert("SECTOR CREATED", `${type === 'monument' ? 'Monument' : 'Event'} data has been successfully uploaded to the grid.`, 'success');
         } catch (err: any) {
             setError(err.message || 'Something went wrong');
         } finally {

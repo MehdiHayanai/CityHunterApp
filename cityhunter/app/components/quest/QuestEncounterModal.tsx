@@ -5,9 +5,11 @@ import { getItemById } from '../../constants/dashboard-constants';
 import { useState, useEffect } from 'react';
 import { QuizService } from '../../services/quiz';
 import { useAuthStore } from '@/store/useAuthStore';
+import { usePopup } from '../../context/PopupContext';
 
 export default function QuestEncounterModal() {
     const { questState, updateQuestState, activeWalk, excludedStopIds, monuments, events } = useDashboardContext();
+    const { showAlert } = usePopup();
     const refreshUser = useAuthStore(state => state.refreshUser);
     
     // Helper to find match in backend data
@@ -85,7 +87,7 @@ export default function QuestEncounterModal() {
                         }
                     } catch (e) {
                         console.error("Failed to verify answer:", e);
-                        alert("Grid verification failed. Check connection.");
+                        showAlert("GRID ERROR", "Verification link failed. Re-establish neural connection.", 'danger');
                     } finally {
                         setSubmitting(false);
                     }
@@ -120,6 +122,7 @@ export default function QuestEncounterModal() {
             if (isComplete) {
                 // TRIGGER COMPLETION MODAL
                 updateQuestState({
+                    isActive: false, // TERMINATE UPLINK IMMEDIATELY
                     pendingEncounterId: null,
                     showQuiz: false,
                     currentQuiz: null,
