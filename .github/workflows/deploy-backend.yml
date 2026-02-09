@@ -41,11 +41,10 @@ jobs:
             --set-env-vars "MONGO_URI=${{ secrets.MONGO_URI }}" \
             --set-env-vars "DB_NAME=${{ secrets.DB_NAME }}" \
             --set-env-vars "SECRET_KEY=${{ secrets.SECRET_KEY }}" \
-            --set-env-vars "API_KEY=${{ secrets.API_KEY }}" \
+            --set-env-vars "API_KEY=${{ secrets.API_BASE_KEY }}" \
             --set-env-vars "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" \
             --set-env-vars "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" \
             --set-env-vars "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" \
-            --set-env-vars "BACKEND_CORS_ORIGINS=${{ secrets.BACKEND_CORS_ORIGINS }}" \
             --set-env-vars "FRONT_URL=${{ secrets.FRONT_URL }}"
 
       - name: Post-Deploy Optimization

@@ -58,7 +58,7 @@ BACKEND_API_URL=http://127.0.0.1:8000/api/v1
 API_BASE_KEY=your_api_key_here
 
 # Optional: Google API Key for chat functionality
-GOOGLE_API_KEY=your_google_api_key_here
+GEMINI_API_KEY=your_google_api_key_here
 ```
 
 > [!IMPORTANT]

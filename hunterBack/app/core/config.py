@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     DB_NAME: str
 
     API_KEY: str
+    GEMINI_API_KEY: str
     FRONT_URL: str
 
     # Email / Resend

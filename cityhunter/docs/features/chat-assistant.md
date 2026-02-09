@@ -225,7 +225,7 @@ commemorate the centennial of the French Revolution..."
 
 ```env
 # Google API Key for ADK
-GOOGLE_API_KEY=your_google_api_key_here
+GEMINI_API_KEY=your_google_api_key_here
 
 # Model configuration
 CHAT_MODEL=gemini-2.0-flash-exp
@@ -285,7 +285,7 @@ interface ChatInterfaceProps {
 ### Chat Not Responding
 
 1. Check backend is running
-2. Verify `GOOGLE_API_KEY` is set
+2. Verify `GEMINI_API_KEY` is set
 3. Check browser console for errors
 4. Verify session ID is valid
 

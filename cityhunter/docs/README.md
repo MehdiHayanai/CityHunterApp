@@ -57,10 +57,6 @@ Historical documentation and project states
 - [CHANGELOG](../CHANGELOG.md) - Version history and release notes
 - [Backend Repository](../../hunterBack/) - FastAPI backend code
 
-## 🤝 Contributing
-
-We welcome contributions! Please read our [Contributing Guide](development/contributing.md) to get started.
-
 ---
 
 **CityHunter** - Wander with Purpose

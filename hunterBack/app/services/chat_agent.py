@@ -3,30 +3,23 @@ import os
 from typing import Optional
 
 from beanie.operators import Or, RegEx
-from dotenv import load_dotenv
 from google.adk.agents import LlmAgent
 from google.adk.runners import InMemoryRunner
 from google.adk.tools.google_search_tool import GoogleSearchTool
 from google.genai import types
 
+from app.core.config import settings
 from app.models.domain.poi import Monument
 from app.models.domain.walk import Walk
-
-# Configure Google Search to work with other tools
-google_search = GoogleSearchTool(bypass_multi_tools_limit=True)
-
 
 # Setup Logger
 logger = logging.getLogger(__name__)
 
-# Load Environment
-load_dotenv()
-API_KEY = os.getenv("GOOGLE_API_KEY")
+# Set API Key in environment for the SDK
+os.environ["GOOGLE_API_KEY"] = settings.GEMINI_API_KEY
 
-if not API_KEY:
-    logger.warning(
-        "GOOGLE_API_KEY not found in environment variables. Chat agents may fail."
-    )
+# Configure Google Search to work with other tools
+google_search = GoogleSearchTool(bypass_multi_tools_limit=True)
 
 # --- Custom Tools ---
 
