@@ -147,7 +147,7 @@ const COMING_SOON_ACHIEVEMENTS = true;
 
 export default function UserProfile({ initialUser }: { initialUser?: UserProfileData }) {
   const { theme, toggleTheme } = useThemeContext();
-  const { user: storeUser } = useAuthStore();
+  const { user: storeUser, logout } = useAuthStore();
   
   // If initialUser is passed, use it; otherwise use storeUser, fallback to ME_DATA
   const USER_DATA = initialUser || storeUser || ME_DATA;
@@ -177,15 +177,21 @@ export default function UserProfile({ initialUser }: { initialUser?: UserProfile
     fetchLevels();
   }, []);
 
-  const sortedFriends = [...ME_DATA.friends.map(f => ({ ...f, isMe: f.id === ME_DATA.id })), {
-    id: ME_DATA.id,
-    name: ME_DATA.name, 
-    handle: ME_DATA.handle, 
-    level: ME_DATA.level, 
-    xp: ME_DATA.xp, 
+  // Build friends ranking: show the profile owner's friends + the profile owner themselves
+  // Filter out the profile owner from their friends list to avoid duplicates, then add them back
+  const friendsWithoutProfileOwner = USER_DATA.friends.filter(f => f.id !== USER_DATA.id);
+  const sortedFriends = [...friendsWithoutProfileOwner.map(f => ({ 
+    ...f, 
+    isMe: storeUser ? f.id === storeUser.id : false 
+  })), {
+    id: USER_DATA.id,
+    name: USER_DATA.name, 
+    handle: USER_DATA.handle, 
+    level: USER_DATA.level, 
+    xp: USER_DATA.xp, 
     avatar: "ME", 
     status: "online",
-    isMe: true 
+    isMe: isMe // Mark as "You" only if viewing your own profile
   }].sort((a, b) => b.xp - a.xp);
 
   // Level Logic
@@ -286,16 +292,18 @@ export default function UserProfile({ initialUser }: { initialUser?: UserProfile
 
                 </div>
 
-                {/* XP Bar */}
-                <div className="mt-6 max-w-xl">
-                  <LevelProgressBar 
-                    currentXp={USER_DATA.xp}
-                    nextLevelXp={USER_DATA.nextLevelXp}
-                    level={USER_DATA.level}
-                    className="h-2 w-full"
-                    showLabel={true}
-                  />
-                </div>
+                {/* XP Bar - Only show on own profile */}
+                {isMe && (
+                  <div className="mt-6 max-w-xl">
+                    <LevelProgressBar 
+                      currentXp={USER_DATA.xp}
+                      nextLevelXp={USER_DATA.nextLevelXp}
+                      level={USER_DATA.level}
+                      className="h-2 w-full"
+                      showLabel={true}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -768,7 +776,10 @@ export default function UserProfile({ initialUser }: { initialUser?: UserProfile
                     
                     {/* Danger Zone */}
                     <section className="pt-4">
-                      <button className="flex items-center gap-2 text-red-500 hover:text-red-400 text-sm font-medium transition-colors cursor-pointer">
+                      <button 
+                        onClick={logout}
+                        className="flex items-center gap-2 text-red-500 hover:text-red-400 text-sm font-medium transition-colors cursor-pointer"
+                      >
                         <i className="fa-solid fa-arrow-right-from-bracket"></i>
                         Sign Out
                       </button>
