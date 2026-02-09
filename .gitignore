@@ -1,0 +1,113 @@
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+*.env
+loc_secrets/
+loc_*/
+loc_*.ipynb
+**/.env
+**/.env.local
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+ENV/
+env/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.next/
+.swc/
+out/
+dist/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+*.log.*
+*_error.log
+core_error.log
+
+# Testing
+coverage/
+.nyc_output/
+test_result*.txt
+
+# Build outputs
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.dll
+*.exe
+*.out
+*.app
+
+# OS
+Thumbs.db
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+simple/
+
+# Lock files (optional - uncomment if you want to ignore)
+# package-lock.json
+# uv.lock
+
+# OpenAPI generated files
+openapi.json

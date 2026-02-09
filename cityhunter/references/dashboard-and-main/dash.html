@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CityHunter | Urban Operations Dashboard</title>
+    
+    <!-- Fonts: Inter & Roboto Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons: FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Leaflet CSS (Map) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+    <!-- React Runtime -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Leaflet JS (Map) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Tailwind Config for CityHunter Theme -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        canvas: 'var(--bg-canvas)',
+                        surface: 'var(--bg-surface)',
+                        primary: 'var(--text-primary)',
+                        secondary: 'var(--text-secondary)',
+                        accent: 'var(--color-accent)',
+                        divider: 'var(--border-divider)',
+                        'accent-dim': 'rgba(var(--color-accent-rgb), 0.1)',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Roboto Mono', 'monospace'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 12s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    },
+                    cursor: {
+                        'col-resize': 'col-resize',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom CSS Styles -->
+    <style>
+        :root {
+            /* Light Mode Variables */
+            --bg-canvas: #F1F5F9;
+            --bg-surface: #FAFAFA;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --color-accent: #B4E600;
+            --color-accent-rgb: 180, 230, 0;
+            --border-divider: rgba(0, 0, 0, 0.08);
+        }
+
+        .dark {
+            /* Dark Mode Variables */
+            --bg-canvas: #050505;
+            --bg-surface: #121212;
+            --text-primary: #FFFFFF;
+            --text-secondary: #9CA3AF;
+            --color-accent: #CCFF00;
+            --color-accent-rgb: 204, 255, 0;
+            --border-divider: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Tech-Noir Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-divider);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* Leaflet Overrides */
+        .leaflet-container {
+            background: var(--bg-surface);
+            font-family: 'Inter', sans-serif;
+        }
+        .leaflet-bar a {
+            background-color: var(--bg-surface) !important;
+            color: var(--text-primary) !important;
+            border-bottom: 1px solid var(--border-divider) !important;
+        }
+        .leaflet-bar a:hover {
+            background-color: var(--bg-canvas) !important;
+            color: var(--color-accent) !important;
+        }
+        .leaflet-control-zoom {
+            border: 1px solid var(--border-divider) !important;
+        }
+        
+        /* Popup Styling */
+        .leaflet-popup-content-wrapper {
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border-divider);
+            border-radius: 16px;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        .leaflet-popup-content {
+            margin: 0;
+            width: 300px !important;
+        }
+        .leaflet-popup-tip {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-divider); /* Tricky to border the tip perfectly, but subtle is fine */
+        }
+        .leaflet-popup-close-button {
+            color: var(--text-secondary) !important;
+            padding-top: 8px !important;
+            padding-right: 8px !important;
+            font-size: 18px !important;
+        }
+        .leaflet-popup-close-button:hover {
+            color: var(--color-accent) !important;
+        }
+
+        /* Custom Marker Pulse */
+        .custom-marker-pin {
+            width: 30px;
+            height: 30px;
+            border-radius: 50% 50% 50% 0;
+            background: var(--color-accent);
+            position: absolute;
+            transform: rotate(-45deg);
+            left: 50%;
+            top: 50%;
+            margin: -15px 0 0 -15px;
+            box-shadow: 0 0 10px rgba(var(--color-accent-rgb), 0.5);
+            border: 2px solid #fff;
+        }
+        .custom-marker-pin::after {
+            content: '';
+            width: 14px;
+            height: 14px;
+            margin: 6px 0 0 6px;
+            background: #000;
+            position: absolute;
+            border-radius: 50%;
+        }
+
+        /* Resizer Handle */
+        .resizer {
+            width: 4px;
+            cursor: col-resize;
+            background: transparent;
+            transition: background 0.2s;
+            position: relative;
+            z-index: 50;
+        }
+        .resizer:hover, .resizer.active {
+            background: var(--color-accent);
+        }
+        .resizer::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: -2px;
+            right: -2px;
+            z-index: 10;
+        }
+
+        /* Utility for copy animation */
+        @keyframes copy-feedback {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); color: var(--color-accent); }
+            100% { transform: scale(1); }
+        }
+        .copy-animate i {
+            animation: copy-feedback 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // --- GLOBAL HELPERS ---
+        window.copyToClipboard = (text, btnId) => {
+            const animateSuccess = () => {
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                    btn.classList.add('copy-animate');
+                    const icon = btn.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('fa-copy');
+                        icon.classList.add('fa-check');
+                        setTimeout(() => {
+                            icon.classList.remove('fa-check');
+                            icon.classList.add('fa-copy');
+                            btn.classList.remove('copy-animate');
+                        }, 1500);
+                    }
+                }
+            };
+
+            const fallbackCopy = (text) => {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed"; 
+                textArea.style.left = "-9999px";
+                textArea.style.top = "0";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) animateSuccess();
+                    else console.error('Fallback copy failed.');
+                } catch (err) {
+                    console.error('Fallback copy error:', err);
+                }
+                document.body.removeChild(textArea);
+            };
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text)
+                    .then(animateSuccess)
+                    .catch(err => {
+                        console.warn('Clipboard API blocked, falling back to execCommand:', err);
+                        fallbackCopy(text);
+                    });
+            } else {
+                fallbackCopy(text);
+            }
+        };
+
+        /* --- DATA CONSTANTS --- */
+        const USER_DATA = {
+            name: "Alex Hunter",
+            rank: "Level 12 Scout",
+            xp: 14500,
+            nextLevel: 16000,
+            avatar: "https://ui-avatars.com/api/?name=Alex+Hunter&background=CCFF00&color=000&bold=true"
+        };
+
+        const CATEGORIES = [
+            { id: 'all', icon: 'fa-globe', label: 'All Sectors', typeValue: null },
+            { id: 'cyber', icon: 'fa-microchip', label: 'Cyberpunk', typeValue: 'Cyberpunk' },
+            { id: 'history', icon: 'fa-landmark', label: 'Legacy', typeValue: 'Legacy' },
+            { id: 'art', icon: 'fa-palette', label: 'Art Ops', typeValue: 'Art Ops' },
+            { id: 'food', icon: 'fa-utensils', label: 'Rations', typeValue: 'Rations' }
+        ];
+
+        // Monuments
+        const MONUMENTS = [
+            { id: 1, name: "Neo-Shinjuku Hub", type: "Cyberpunk", address: "2-8-1 Nishi-Shinjuku, Tokyo", likes: "12.4k", visitors: "842", xp: 850, dist: "0.4 km", rating: 4.9, img: "https://images.unsplash.com/photo-1542051841857-5f90071e7989?auto=format&fit=crop&q=80&w=800", lat: 35.6915, lng: 139.7034, status: 'HIGH YIELD' },
+            { id: 2, name: "The Iron Citadel", type: "Legacy", address: "Imperial Gardens, Chiyoda", likes: "8.1k", visitors: "320", xp: 500, dist: "1.2 km", rating: 4.5, img: "https://images.unsplash.com/photo-1599593252516-7d4653e54b67?auto=format&fit=crop&q=80&w=800", lat: 35.6895, lng: 139.6917, status: 'ACTIVE' },
+            { id: 3, name: "Vector Art Alley", type: "Art Ops", address: "Harajuku Street, Jingumae", likes: "5.5k", visitors: "1.2k", xp: 350, dist: "2.1 km", rating: 4.7, img: "https://images.unsplash.com/photo-1493106819202-0b47f8ad0350?auto=format&fit=crop&q=80&w=800", lat: 35.6950, lng: 139.7100, status: 'NEW' },
+            { id: 4, name: "Midnight Ramen", type: "Rations", address: "Omoide Yokocho, Shinjuku", likes: "25k", visitors: "5k+", xp: 200, dist: "0.8 km", rating: 4.8, img: "https://images.unsplash.com/photo-1552611052-33e04de081de?auto=format&fit=crop&q=80&w=800", lat: 35.6850, lng: 139.7000, status: 'POPULAR' },
+            { id: 5, name: "Data Terminal 7", type: "Cyberpunk", address: "Kabukicho 1-Chome, Lane 3", likes: "9.2k", visitors: "440", xp: 1200, dist: "3.5 km", rating: 5.0, img: "https://images.unsplash.com/photo-1516110833967-0b5716ca1387?auto=format&fit=crop&q=80&w=800", lat: 35.6980, lng: 139.6950, status: 'LEGENDARY' },
+            { id: 6, name: "Meiji Cyber-Shrine", type: "Legacy", address: "Yoyogi Kamizonocho, Shibuya", likes: "15.2k", visitors: "2.1k", xp: 600, dist: "1.8 km", rating: 4.6, img: "https://images.unsplash.com/photo-1601328905072-358045618b62?auto=format&fit=crop&q=80&w=800", lat: 35.6764, lng: 139.6993, status: 'ACTIVE' },
+            { id: 7, name: "Neon Arcade Zero", type: "Cyberpunk", address: "Taito City, Akihabara", likes: "32k", visitors: "8k+", xp: 950, dist: "6.5 km", rating: 4.9, img: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=800", lat: 35.6984, lng: 139.7712, status: 'POPULAR' },
+            { id: 8, name: "Synth-Noodle Bar", type: "Rations", address: "Golden Gai, Shinjuku", likes: "4.3k", visitors: "890", xp: 150, dist: "0.9 km", rating: 4.4, img: "https://images.unsplash.com/photo-1569937756447-e19c3ffcf28d?auto=format&fit=crop&q=80&w=800", lat: 35.6940, lng: 139.7040, status: 'HIDDEN GEM' },
+            { id: 9, name: "Quantum Gallery", type: "Art Ops", address: "Roppongi Hills, Minato", likes: "9.8k", visitors: "1.5k", xp: 450, dist: "4.2 km", rating: 4.7, img: "https://images.unsplash.com/photo-1554907984-15263bfd63bd?auto=format&fit=crop&q=80&w=800", lat: 35.6605, lng: 139.7292, status: 'EVENT' },
+            { id: 10, name: "Catacomb Data Vault", type: "Legacy", address: "1 Av. du Colonel Henri Rol-Tanguy, Paris", likes: "42k", visitors: "12k+", xp: 2500, dist: "9,712 km", rating: 4.8, img: "https://images.unsplash.com/photo-1533423996375-f914ab160918?auto=format&fit=crop&q=80&w=800", lat: 48.8339, lng: 2.3324, status: 'LEGENDARY' },
+            { id: 11, name: "Neon Louvre Expanse", type: "Art Ops", address: "Rue de Rivoli, Paris", likes: "89k", visitors: "50k+", xp: 1200, dist: "9,715 km", rating: 4.9, img: "https://images.unsplash.com/photo-1565099824688-e9d86962f327?auto=format&fit=crop&q=80&w=800", lat: 48.8606, lng: 2.3376, status: 'HIGH YIELD' },
+            { id: 12, name: "The Neural Spire", type: "Cyberpunk", address: "32 London Bridge St, London", likes: "65k", visitors: "15k+", xp: 1800, dist: "9,560 km", rating: 4.8, img: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&q=80&w=800", lat: 51.5045, lng: -0.0865, status: 'HIGH YIELD' },
+            { id: 13, name: "Camden Glitch Market", type: "Art Ops", address: "Camden Lock Pl, London", likes: "28k", visitors: "5k+", xp: 600, dist: "9,565 km", rating: 4.6, img: "https://images.unsplash.com/photo-1533552062590-e57519184c2c?auto=format&fit=crop&q=80&w=800", lat: 51.5416, lng: -0.1465, status: 'POPULAR' },
+            { id: 14, name: "The Royal Data Vault", type: "Legacy", address: "London EC3N 4AB", likes: "45k", visitors: "20k+", xp: 3000, dist: "9,561 km", rating: 4.9, img: "https://images.unsplash.com/photo-1520986606214-8b456906c813?auto=format&fit=crop&q=80&w=800", lat: 51.5081, lng: -0.0759, status: 'LEGENDARY' }
+        ];
+
+        // Events
+        const EVENTS = [
+            { id: 201, name: "Techno-Shaman Ritual", type: "Cyberpunk", address: "Womb Club, Shibuya", likes: "2.1k", visitors: "500+", swagg: "Neon Demon Pin", dist: "2.3 km", rating: 4.7, img: "https://images.unsplash.com/photo-1574362900898-d1df52b1442c?auto=format&fit=crop&q=80&w=800", lat: 35.6585, lng: 139.6990, status: 'TONIGHT' },
+            { id: 202, name: "Retro-Future Expo", type: "Legacy", address: "Tokyo Big Sight, Koto", likes: "15k", visitors: "10k+", swagg: "Vintage Mecha Badge", dist: "8.5 km", rating: 4.9, img: "https://images.unsplash.com/photo-1512428559087-560fa0db99b2?auto=format&fit=crop&q=80&w=800", lat: 35.6300, lng: 139.7930, status: 'WEEKEND' },
+            { id: 203, name: "Street Food Hackathon", type: "Rations", address: "Ueno Park, Taito", likes: "8.2k", visitors: "3k+", swagg: "Glitch Burger Pin", dist: "4.1 km", rating: 4.6, img: "https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?auto=format&fit=crop&q=80&w=800", lat: 35.7140, lng: 139.7740, status: 'LIVE' },
+            { id: 204, name: "Digital Art Canvas", type: "Art Ops", address: "TeamLab Borderless", likes: "45k", visitors: "25k+", swagg: "Holo-Prism Pin", dist: "5.6 km", rating: 4.9, img: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=800", lat: 35.6260, lng: 139.7750, status: 'LIMITED' },
+            { id: 205, name: "London Cyber-Gala", type: "Cyberpunk", address: "The Shard, London", likes: "12k", visitors: "1k+", swagg: "Royal Glitch Pin", dist: "9,560 km", rating: 4.8, img: "https://images.unsplash.com/photo-1524177579047-4c33d45c0836?auto=format&fit=crop&q=80&w=800", lat: 51.5045, lng: -0.0865, status: 'VIP' },
+            { id: 206, name: "Paris Fashion Glitch", type: "Art Ops", address: "Le Marais, Paris", likes: "22k", visitors: "5k+", swagg: "Vogue 2077 Pin", dist: "9,712 km", rating: 4.7, img: "https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?auto=format&fit=crop&q=80&w=800", lat: 48.8566, lng: 2.3522, status: 'TRENDING' }
+        ];
+
+        // Walks (New Data)
+        const WALKS = [
+            {
+                id: 301,
+                name: "Neon Nights Run",
+                desc: "A high-octane tour of the city's brightest cyber-hubs. Requires high energy.",
+                difficulty: "Hard",
+                estTime: "2h 30m",
+                stopIds: [1, 8, 5, 7, 201] // IDs from Monuments & Events
+            },
+            {
+                id: 302,
+                name: "Imperial Legacy Path",
+                desc: "Walk through history. Connect with the ancient grid.",
+                difficulty: "Medium",
+                estTime: "1h 45m",
+                stopIds: [2, 6, 202]
+            },
+            {
+                id: 303,
+                name: "Tokyo Art Glitch",
+                desc: "Discover the hidden art ops scattered in the matrix.",
+                difficulty: "Easy",
+                estTime: "3h 00m",
+                stopIds: [3, 204, 9, 203]
+            }
+        ];
+
+        // --- HELPER to get item by ID ---
+        const getItemById = (id) => {
+            return MONUMENTS.find(m => m.id === id) || EVENTS.find(e => e.id === id);
+        };
+
+        /* --- COMPONENTS --- */
+
+        const Navbar = ({ isDark, toggleTheme, activeTab, setActiveTab }) => (
+            <nav className="h-16 border-b border-divider bg-surface/90 backdrop-blur sticky top-0 z-50 flex items-center justify-between px-6 shrink-0">
+                <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2 select-none group cursor-pointer">
+                        <div className="w-8 h-8 rounded-lg bg-accent text-black flex items-center justify-center font-bold text-lg shadow-[0_0_15px_rgba(var(--color-accent-rgb),0.5)] transition-transform group-hover:rotate-12">
+                            <i className="fa-solid fa-crosshairs"></i>
+                        </div>
+                        <h1 className="text-xl font-black tracking-tighter">CITY<span className="text-accent">HUNTER</span></h1>
+                    </div>
+                    
+                    <div className="hidden md:flex h-8 w-[1px] bg-divider mx-2"></div>
+                    
+                    <div className="hidden md:flex gap-1 bg-canvas p-1 rounded-lg border border-divider">
+                        {['Monument', 'Event', 'Walk'].map(item => (
+                            <button 
+                                key={item} 
+                                onClick={() => setActiveTab(item)}
+                                className={`px-4 py-1 text-xs font-bold rounded hover:bg-surface hover:text-accent transition-colors ${activeTab === item ? 'bg-surface shadow-sm text-primary' : 'text-secondary'}`}
+                            >
+                                {item.toUpperCase()}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-5">
+                    <div className="hidden md:flex items-center gap-3">
+                        <div className="text-right">
+                            <div className="text-xs font-mono text-accent">{USER_DATA.xp.toLocaleString()} XP</div>
+                            <div className="h-1.5 w-24 bg-divider rounded-full mt-1 overflow-hidden">
+                                <div className="h-full bg-accent w-[85%]"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button 
+                        onClick={toggleTheme} 
+                        className="w-9 h-9 rounded-full border border-divider bg-canvas text-secondary hover:text-accent hover:border-accent transition-all flex items-center justify-center"
+                    >
+                        <i className={`fa-solid ${isDark ? 'fa-sun' : 'fa-moon'}`}></i>
+                    </button>
+
+                    <div className="flex items-center gap-3 pl-5 border-l border-divider">
+                        <div className="hidden sm:block text-right leading-none">
+                            <div className="font-bold text-sm">{USER_DATA.name}</div>
+                            <div className="text-[10px] font-mono text-secondary mt-1">{USER_DATA.rank}</div>
+                        </div>
+                        <img src={USER_DATA.avatar} alt="Profile" className="w-10 h-10 rounded-full border-2 border-surface shadow-sm" />
+                    </div>
+                </div>
+            </nav>
+        );
+
+        const SearchBar = ({ searchQuery, setSearchQuery }) => (
+            <div className="relative group z-20">
+                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-secondary group-focus-within:text-accent transition-colors">
+                    <i className="fa-solid fa-magnifying-glass"></i>
+                </div>
+                <input 
+                    type="text" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search name, address, or coords..." 
+                    className="w-full h-12 bg-surface border border-divider rounded-2xl pl-12 pr-12 text-sm font-medium focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all shadow-sm"
+                />
+                <button 
+                    onClick={() => setSearchQuery('')}
+                    className={`absolute inset-y-0 right-2 px-3 text-secondary hover:text-primary transition-opacity ${searchQuery ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                >
+                    <i className="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        );
+
+        const CategoryPill = ({ icon, label, isActive, onClick }) => (
+            <button 
+                onClick={onClick}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-bold whitespace-nowrap transition-all ${
+                    isActive 
+                    ? 'bg-primary text-canvas border-primary shadow-lg transform scale-105' 
+                    : 'bg-surface text-secondary border-divider hover:border-accent hover:text-primary'
+                }`}
+            >
+                {isActive && <i className="fa-solid fa-check text-[10px] mr-1"></i>}
+                <i className={`fa-solid ${icon}`}></i>
+                {label}
+            </button>
+        );
+
+        const MonumentCard = ({ item, layout = 'grid', onSelect }) => {
+            if (layout === 'list') {
+                return (
+                    <div 
+                        onClick={() => onSelect(item.id)}
+                        className="group flex gap-4 bg-surface p-3 rounded-2xl border border-divider hover:border-accent transition-all cursor-pointer relative overflow-hidden"
+                    >
+                        <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0 relative">
+                            <img src={item.img} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        </div>
+                        <div className="flex-1 flex flex-col justify-center min-w-0">
+                            <div className="flex justify-between items-start mb-1">
+                                <h3 className="font-bold text-primary truncate">{item.name}</h3>
+                                {item.status === 'NEW' && <span className="text-[9px] bg-accent text-black px-1.5 py-0.5 rounded font-mono font-bold">NEW</span>}
+                            </div>
+                            <p className="text-xs text-secondary font-mono mb-2">{item.type} • {item.dist}</p>
+                            <div className="mt-auto flex justify-between items-end">
+                                <div className="flex items-center gap-1 text-[10px] text-yellow-500 bg-canvas px-2 py-1 rounded border border-divider">
+                                    <i className="fa-solid fa-star"></i> {item.rating}
+                                </div>
+                                
+                                {item.xp ? (
+                                    <div className="text-right font-mono">
+                                        <span className="text-accent font-bold text-sm">+{item.xp}</span> <span className="text-[10px] text-secondary">XP</span>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-1.5 text-purple-400">
+                                        <i className="fa-solid fa-medal"></i>
+                                        <span className="font-bold text-xs">{item.swagg}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div 
+                    onClick={() => onSelect(item.id)}
+                    className="group bg-surface rounded-2xl border border-divider overflow-hidden hover:border-accent transition-all cursor-pointer relative"
+                >
+                    <div className="absolute top-3 right-3 z-10 bg-black/60 backdrop-blur px-2 py-1 rounded border border-white/10 font-mono text-xs font-bold">
+                        {item.xp ? (
+                            <span className="text-accent">+{item.xp} XP</span>
+                        ) : (
+                             <span className="text-purple-400"><i className="fa-solid fa-medal mr-1"></i>PIN</span>
+                        )}
+                    </div>
+                    <div className="h-40 overflow-hidden relative">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-60 z-[1]"></div>
+                        <img src={item.img} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                        <div className="absolute bottom-3 left-3 z-[2]">
+                            <p className="text-[10px] text-accent font-mono uppercase tracking-wider mb-0.5">{item.type}</p>
+                            <h3 className="text-white font-bold text-sm">{item.name}</h3>
+                        </div>
+                    </div>
+                    <div className="p-3 flex justify-between items-center text-xs font-mono text-secondary bg-surface">
+                        <span className="flex items-center gap-1"><i className="fa-solid fa-location-arrow"></i> {item.dist}</span>
+                        <span className="flex items-center gap-1 text-primary"><i className="fa-solid fa-user-group"></i> {item.visitors} here</span>
+                    </div>
+                </div>
+            );
+        };
+
+        const WalkCard = ({ walk, onSelect }) => (
+            <div 
+                onClick={() => onSelect(walk)}
+                className="group bg-surface p-4 rounded-2xl border border-divider hover:border-accent transition-all cursor-pointer"
+            >
+                <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-bold text-lg text-primary">{walk.name}</h3>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-accent/20 text-accent uppercase">{walk.difficulty}</span>
+                </div>
+                <p className="text-xs text-secondary mb-4 line-clamp-2">{walk.desc}</p>
+                <div className="flex items-center justify-between text-xs font-mono text-secondary">
+                    <span className="flex items-center gap-1"><i className="fa-regular fa-clock"></i> {walk.estTime}</span>
+                    <span className="flex items-center gap-1"><i className="fa-solid fa-location-dot"></i> {walk.stopIds.length} Stops</span>
+                </div>
+            </div>
+        );
+
+        const WalkStopItem = ({ item, isExcluded, onToggle }) => (
+            <div className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${isExcluded ? 'opacity-50 border-transparent bg-canvas' : 'bg-surface border-divider'}`}>
+                <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0">
+                    <img src={item.img} className="w-full h-full object-cover grayscale" />
+                </div>
+                <div className="flex-1 min-w-0">
+                    <h4 className={`text-sm font-bold truncate ${isExcluded ? 'line-through text-secondary' : 'text-primary'}`}>{item.name}</h4>
+                    <p className="text-[10px] text-secondary truncate">{item.type}</p>
+                </div>
+                <button 
+                    onClick={(e) => { e.stopPropagation(); onToggle(item.id); }}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${isExcluded ? 'text-secondary hover:text-accent' : 'text-accent hover:bg-canvas'}`}
+                >
+                    <i className={`fa-solid ${isExcluded ? 'fa-plus' : 'fa-check'}`}></i>
+                </button>
+            </div>
+        );
+
+        const LeafletMap = ({ isDark, items, selectedId, walkPath }) => {
+            const mapContainer = useRef(null);
+            const mapInstance = useRef(null);
+            const markersRef = useRef([]);
+            const polylineRef = useRef(null);
+
+            useEffect(() => {
+                // Init Map
+                if (!mapInstance.current && mapContainer.current) {
+                    mapInstance.current = L.map(mapContainer.current, {
+                        zoomControl: false,
+                        attributionControl: false
+                    }).setView([35.6915, 139.7034], 14);
+
+                    L.control.zoom({ position: 'bottomright' }).addTo(mapInstance.current);
+                }
+
+                const map = mapInstance.current;
+
+                // Tile Layer
+                const tileUrl = isDark 
+                    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' 
+                    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+                
+                map.eachLayer((layer) => {
+                    if (layer instanceof L.TileLayer) map.removeLayer(layer);
+                });
+
+                L.tileLayer(tileUrl, { subdomains: 'abcd', maxZoom: 20 }).addTo(map);
+
+                // --- Markers ---
+                markersRef.current.forEach(m => map.removeLayer(m));
+                markersRef.current = [];
+
+                const createCustomIcon = (isWalkStop, index) => {
+                    const color = isDark ? '#CCFF00' : '#B4E600';
+                    // If it's a walk stop, show a number or specialized style? For now, stick to circle
+                    return L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div style="
+                            background-color: ${color};
+                            width: 16px;
+                            height: 16px;
+                            border-radius: 50%;
+                            border: 2px solid white;
+                            box-shadow: 0 0 15px ${color};
+                            animation: pulse 2s infinite;
+                            display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: bold; color: black;
+                        ">${isWalkStop ? index + 1 : ''}</div>`,
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    });
+                };
+
+                items.forEach((item, idx) => {
+                    const isWalkStop = !!walkPath; // If walkPath exists, we assume items are ordered stops
+                    const marker = L.marker([item.lat, item.lng], { icon: createCustomIcon(isWalkStop, idx) })
+                        .addTo(map);
+                    marker.monumentId = item.id;
+
+                     const rewardHTML = item.xp 
+                        ? `<div style="color: var(--color-accent); font-weight: bold; font-family: 'Roboto Mono'; font-size: 12px;">+${item.xp} XP</div>`
+                        : `<div style="color: #c084fc; font-weight: bold; font-family: 'Roboto Mono'; font-size: 11px; display: flex; align-items: center; gap: 4px; justify-content: flex-end;"><i class="fa-solid fa-medal"></i> ${item.swagg}</div>`;
+
+                    const popupContent = `
+                        <div style="font-family: 'Inter', sans-serif;">
+                            <div style="height: 120px; width: 100%; position: relative; overflow: hidden; border-bottom: 1px solid var(--border-divider);">
+                                <img src="${item.img}" style="width: 100%; height: 100%; object-fit: cover;" alt="${item.name}">
+                                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); padding: 10px;">
+                                    <span style="background-color: var(--color-accent); color: black; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; font-family: 'Roboto Mono'; text-transform: uppercase;">${item.type}</span>
+                                </div>
+                            </div>
+                            <div style="padding: 16px; background-color: var(--bg-surface);">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--text-primary); line-height: 1.2;">${item.name}</h3>
+                                    <div style="text-align: right;">${rewardHTML}</div>
+                                </div>
+                                <div style="font-family: 'Roboto Mono'; font-size: 10px; color: var(--text-secondary); margin-bottom: 12px; display: flex; align-items: center; gap: 4px;">
+                                    <i class="fa-solid fa-location-crosshairs"></i> ${item.lat.toFixed(4)}, ${item.lng.toFixed(4)}
+                                </div>
+                                <div style="background-color: var(--bg-canvas); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-divider); margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
+                                    <div style="font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
+                                        <i class="fa-solid fa-map-pin" style="margin-right: 4px;"></i> ${item.address}
+                                    </div>
+                                    <button id="copy-btn-${item.id}" onclick="copyToClipboard('${item.address}', 'copy-btn-${item.id}')" style="background: none; border: none; cursor: pointer; color: var(--text-primary); padding: 4px; transition: color 0.2s;"><i class="fa-regular fa-copy"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    marker.bindPopup(popupContent, { maxWidth: 300, minWidth: 280, className: 'custom-popup-theme' });
+                    markersRef.current.push(marker);
+                });
+
+                // --- Polyline for Walks ---
+                if (polylineRef.current) {
+                    map.removeLayer(polylineRef.current);
+                    polylineRef.current = null;
+                }
+
+                if (walkPath && walkPath.length > 1) {
+                    const latLngs = walkPath.map(item => [item.lat, item.lng]);
+                    polylineRef.current = L.polyline(latLngs, {
+                        color: isDark ? '#CCFF00' : '#B4E600',
+                        weight: 3,
+                        opacity: 0.8,
+                        dashArray: '10, 10',
+                        lineCap: 'round'
+                    }).addTo(map);
+                    
+                    // Fit bounds to walk
+                    map.fitBounds(polylineRef.current.getBounds(), { padding: [50, 50] });
+                }
+
+            }, [isDark, items, walkPath]);
+
+            // Handle Redirection logic
+            useEffect(() => {
+                if (selectedId && mapInstance.current) {
+                    const item = items.find(i => i.id === selectedId);
+                    if (item) {
+                        mapInstance.current.flyTo([item.lat, item.lng], 16, { duration: 1.5 });
+                        setTimeout(() => {
+                             const marker = markersRef.current.find(m => m.monumentId === selectedId);
+                             if (marker) marker.openPopup();
+                        }, 500);
+                    }
+                }
+            }, [selectedId, items]);
+
+            useEffect(() => {
+                const resizeObserver = new ResizeObserver(() => {
+                    if (mapInstance.current) mapInstance.current.invalidateSize();
+                });
+                if (mapContainer.current) resizeObserver.observe(mapContainer.current);
+                return () => resizeObserver.disconnect();
+            }, []);
+
+            return <div ref={mapContainer} className="w-full h-full z-0" />;
+        };
+
+        const Dashboard = () => {
+            const [isDark, setIsDark] = useState(true);
+            const [activeTab, setActiveTab] = useState('Monument'); // 'Monument', 'Event', 'Walk'
+            const [activeCategories, setActiveCategories] = useState(['all']);
+            const [searchQuery, setSearchQuery] = useState('');
+            const [selectedMonumentId, setSelectedMonumentId] = useState(null);
+            
+            // Walk State
+            const [activeWalk, setActiveWalk] = useState(null); // The Walk Object
+            const [excludedStopIds, setExcludedStopIds] = useState([]); // IDs of stops user toggled off
+            
+            const [sidebarWidth, setSidebarWidth] = useState(450);
+            const [isCollapsed, setIsCollapsed] = useState(false);
+            const [isResizing, setIsResizing] = useState(false);
+            const containerRef = useRef(null);
+
+            // Initialize Theme
+            useEffect(() => {
+                if (isDark) document.documentElement.classList.add('dark');
+                else document.documentElement.classList.remove('dark');
+            }, [isDark]);
+
+            // Reset walk state when switching tabs
+            useEffect(() => {
+                if (activeTab !== 'Walk') {
+                    setActiveWalk(null);
+                    setExcludedStopIds([]);
+                }
+            }, [activeTab]);
+
+            const toggleCategory = (id) => {
+                setActiveCategories(prev => {
+                    if (id === 'all') return ['all'];
+                    let newCats = prev.filter(c => c !== 'all');
+                    if (newCats.includes(id)) newCats = newCats.filter(c => c !== id);
+                    else newCats.push(id);
+                    return newCats.length === 0 ? ['all'] : newCats;
+                });
+            };
+
+            // --- FILTER LOGIC ---
+            const filteredItems = useMemo(() => {
+                if (activeTab === 'Walk') {
+                    // In Walk tab, if a walk is active, we return the stops associated with it
+                    if (activeWalk) {
+                        return activeWalk.stopIds
+                            .map(id => getItemById(id))
+                            .filter(item => item && !excludedStopIds.includes(item.id));
+                    }
+                    return []; // If no walk selected, map shows nothing or maybe all walks starts? For now nothing.
+                }
+
+                let sourceData = [];
+                if (activeTab === 'Monument') sourceData = MONUMENTS;
+                else if (activeTab === 'Event') sourceData = EVENTS;
+
+                return sourceData.filter(m => {
+                    const isAll = activeCategories.includes('all');
+                    const validTypes = activeCategories.map(catId => CATEGORIES.find(c => c.id === catId)?.typeValue).filter(Boolean);
+                    const categoryMatch = isAll || validTypes.includes(m.type);
+                    const query = searchQuery.toLowerCase();
+                    const searchMatch = !query || 
+                        m.name.toLowerCase().includes(query) || 
+                        m.address.toLowerCase().includes(query) || 
+                        `${m.lat}, ${m.lng}`.includes(query);
+                    return categoryMatch && searchMatch;
+                });
+            }, [activeCategories, searchQuery, activeTab, activeWalk, excludedStopIds]);
+
+            const handleWalkSelect = (walk) => {
+                setActiveWalk(walk);
+                setExcludedStopIds([]); // Reset exclusions
+            };
+
+            const toggleWalkStop = (id) => {
+                setExcludedStopIds(prev => 
+                    prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+                );
+            };
+
+            // Resizing Logic
+            const startResizing = (e) => { e.preventDefault(); setIsResizing(true); };
+            const stopResizing = () => { setIsResizing(false); };
+            const resize = (e) => {
+                if (isResizing && containerRef.current) {
+                    const newWidth = e.clientX - containerRef.current.getBoundingClientRect().left;
+                    if (newWidth > 300 && newWidth < 800) setSidebarWidth(newWidth);
+                }
+            };
+
+            useEffect(() => {
+                window.addEventListener('mousemove', resize);
+                window.addEventListener('mouseup', stopResizing);
+                return () => {
+                    window.removeEventListener('mousemove', resize);
+                    window.removeEventListener('mouseup', stopResizing);
+                };
+            }, [isResizing]);
+
+            return (
+                <div ref={containerRef} className="flex flex-col h-screen overflow-hidden bg-canvas text-primary selection:bg-accent selection:text-black">
+                    <Navbar isDark={isDark} toggleTheme={() => setIsDark(!isDark)} activeTab={activeTab} setActiveTab={setActiveTab} />
+
+                    <div className="flex flex-1 overflow-hidden relative">
+                        
+                        {/* LEFT PANEL */}
+                        <div 
+                            style={{ width: isCollapsed ? '0px' : `${sidebarWidth}px`, opacity: isCollapsed ? 0 : 1, transition: isResizing ? 'none' : 'width 0.3s ease, opacity 0.2s ease' }}
+                            className="h-full overflow-hidden relative z-10 flex flex-col border-r border-divider bg-canvas shrink-0"
+                        >
+                            <div className="h-full overflow-y-auto no-scrollbar">
+                                <div className="p-6 md:p-8 space-y-6 pb-32 min-w-[350px]">
+                                    
+                                    {/* Header */}
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h2 className="text-3xl font-black mb-2 tracking-tight">
+                                                {activeTab === 'Walk' && activeWalk ? 'Route Planner' : 
+                                                 activeTab === 'Walk' ? 'Available Routes' :
+                                                 activeTab === 'Event' ? 'Event Protocol' : 'Mission Control'}
+                                            </h2>
+                                            <p className="text-secondary">
+                                                {activeTab === 'Walk' && activeWalk ? 'Customize your itinerary.' :
+                                                 activeTab === 'Walk' ? 'Select a route to begin.' :
+                                                 activeTab === 'Event' ? 'Locate active events.' : 'Select a target.'}
+                                            </p>
+                                        </div>
+                                        <button onClick={() => setIsCollapsed(true)} className="text-secondary hover:text-accent p-2 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface transition-colors">
+                                            <i className="fa-solid fa-angles-left"></i>
+                                        </button>
+                                    </div>
+
+                                    {/* Content Switcher */}
+                                    {activeTab === 'Walk' ? (
+                                        activeWalk ? (
+                                            /* WALK DETAILS VIEW */
+                                            <div className="space-y-6 animate-fade-in">
+                                                <button onClick={() => setActiveWalk(null)} className="flex items-center gap-2 text-xs font-bold text-secondary hover:text-accent transition-colors">
+                                                    <i className="fa-solid fa-arrow-left"></i> BACK TO ROUTES
+                                                </button>
+                                                
+                                                <div className="bg-surface p-4 rounded-2xl border border-accent/30 shadow-[0_0_20px_rgba(var(--color-accent-rgb),0.1)]">
+                                                    <h3 className="text-xl font-bold mb-1 text-primary">{activeWalk.name}</h3>
+                                                    <div className="flex gap-4 text-xs font-mono text-secondary mb-4">
+                                                        <span><i className="fa-regular fa-clock"></i> ~{activeWalk.estTime}</span>
+                                                        <span><i className="fa-solid fa-layer-group"></i> {activeWalk.stopIds.length} Stops</span>
+                                                    </div>
+                                                    <div className="h-1 bg-divider rounded-full overflow-hidden">
+                                                        <div className="h-full bg-accent transition-all duration-500" style={{ width: `${(filteredItems.length / activeWalk.stopIds.length) * 100}%` }}></div>
+                                                    </div>
+                                                    <div className="flex justify-between text-[10px] mt-2 font-mono">
+                                                        <span>STOPS ACTIVE: {filteredItems.length}</span>
+                                                        <span>TOTAL: {activeWalk.stopIds.length}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    <h4 className="font-bold text-sm text-secondary uppercase tracking-wider">Itinerary</h4>
+                                                    {activeWalk.stopIds.map((id, index) => {
+                                                        const item = getItemById(id);
+                                                        const isExcluded = excludedStopIds.includes(id);
+                                                        if (!item) return null;
+                                                        
+                                                        return (
+                                                            <div key={id} className="relative">
+                                                                {/* Connector Line (visual only) */}
+                                                                {index !== activeWalk.stopIds.length - 1 && (
+                                                                    <div className={`absolute left-[19px] top-10 bottom-[-12px] w-[2px] ${isExcluded ? 'bg-divider' : 'bg-accent/50'}`}></div>
+                                                                )}
+                                                                <WalkStopItem 
+                                                                    item={item} 
+                                                                    isExcluded={isExcluded} 
+                                                                    onToggle={toggleWalkStop} 
+                                                                />
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            /* WALK LIST VIEW */
+                                            <div className="space-y-4">
+                                                {WALKS.map(walk => (
+                                                    <WalkCard key={walk.id} walk={walk} onSelect={handleWalkSelect} />
+                                                ))}
+                                            </div>
+                                        )
+                                    ) : (
+                                        /* MONUMENT/EVENT LIST VIEW */
+                                        <>
+                                            <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+                                            <div className="flex gap-2 overflow-x-auto pb-2 -mx-6 px-6 no-scrollbar">
+                                                {CATEGORIES.map(cat => (
+                                                    <CategoryPill key={cat.id} {...cat} isActive={activeCategories.includes(cat.id)} onClick={() => toggleCategory(cat.id)} />
+                                                ))}
+                                            </div>
+                                            
+                                            {filteredItems.length === 0 && (
+                                                <div className="text-center py-12 text-secondary">
+                                                    <i className="fa-solid fa-radar fa-2x mb-3 opacity-50"></i>
+                                                    <p>No signals detected matching query.</p>
+                                                </div>
+                                            )}
+
+                                            {filteredItems.length > 0 && (
+                                                <section>
+                                                    <div className="flex justify-between items-end mb-4">
+                                                        <h3 className="font-bold text-lg">Detected Locations</h3>
+                                                    </div>
+                                                    <div className="flex flex-col gap-4">
+                                                        {filteredItems.map(m => (
+                                                            <MonumentCard key={`list-${m.id}`} item={m} layout="list" onSelect={setSelectedMonumentId} />
+                                                        ))}
+                                                    </div>
+                                                </section>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                                <div className="sticky bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-canvas to-transparent pointer-events-none"></div>
+                            </div>
+                        </div>
+
+                        {/* RESIZER */}
+                        <div className={`resizer h-full border-r border-divider hover:border-accent/50 ${isCollapsed ? 'hidden' : ''} ${isResizing ? 'active' : ''}`} onMouseDown={startResizing}></div>
+
+                        {/* RIGHT PANEL (MAP) */}
+                        <div className="flex-1 relative bg-surface overflow-hidden">
+                            {isCollapsed && (
+                                <button onClick={() => setIsCollapsed(false)} className="absolute top-4 left-4 z-[9999] bg-surface border border-divider text-accent hover:text-primary hover:bg-canvas w-10 h-10 flex items-center justify-center rounded-lg shadow-xl transition-all">
+                                    <i className="fa-solid fa-angles-right"></i>
+                                </button>
+                            )}
+
+                            <LeafletMap 
+                                isDark={isDark} 
+                                items={filteredItems} 
+                                selectedId={selectedMonumentId}
+                                walkPath={activeTab === 'Walk' && activeWalk ? filteredItems : null}
+                            />
+
+                            <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[400]">
+                                <button className="bg-surface/90 backdrop-blur-md border border-divider px-5 py-2 rounded-full text-xs font-bold flex items-center gap-2 hover:bg-surface transition-all group shadow-lg text-primary">
+                                    <div className="w-2 h-2 rounded-full bg-accent animate-pulse"></div>
+                                    {activeTab === 'Walk' ? 'Route Active' : 'Scanning Area'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Dashboard />);
+    </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+services:
+  api:
+    build: .
+    # Map the internal container port (8000) to Google's default (8080)
+    ports:
+      - "8080:8080"
+    # Points to your existing .env for secret injection
+    env_file:
+      - .env
+    # Production command: removes --reload for better performance
+    # and ensures we bind to 0.0.0.0 for external traffic.
+    command: >
+      sh -c "uv run uvicorn app.main:app --host 0.0.0.0 --port $${PORT:-8080}"

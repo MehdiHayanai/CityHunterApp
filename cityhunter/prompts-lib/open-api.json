@@ -1,0 +1,3624 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CityHunter Backend",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Register",
+        "operationId": "register_api_v1_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/verify-email": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Verify Email",
+        "description": "Verify email with the 6-digit code.",
+        "operationId": "verify_email_api_v1_auth_verify_email_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_verify_email_api_v1_auth_verify_email_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Verify Email Api V1 Auth Verify Email Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/request-verification": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Request Verification",
+        "description": "Request a new verification email.",
+        "operationId": "request_verification_api_v1_auth_request_verification_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_request_verification_api_v1_auth_request_verification_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Request Verification Api V1 Auth Request Verification Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login",
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLogin"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Login Api V1 Auth Login Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/access-token": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login Access Token",
+        "operationId": "login_access_token_api_v1_auth_access_token_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_login_access_token_api_v1_auth_access_token_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Login Access Token Api V1 Auth Access Token Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/profile/me": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Read User Me",
+        "description": "Get current user profile.",
+        "operationId": "read_user_me_api_v1_users_profile_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/profile/{user_id}": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get Profile",
+        "operationId": "get_profile_api_v1_users_profile__user_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Update Profile",
+        "operationId": "update_profile_api_v1_users_profile__user_id__patch",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Data"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Update Profile Api V1 Users Profile  User Id  Patch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pois/{id}": {
+      "get": {
+        "tags": [
+          "pois"
+        ],
+        "summary": "Get Poi Detail",
+        "description": "Get a specific POI details.",
+        "operationId": "get_poi_detail_api_v1_pois__id__get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POI"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "pois"
+        ],
+        "summary": "Delete Poi",
+        "description": "Delete a POI.",
+        "operationId": "delete_poi_api_v1_pois__id__delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "pois"
+        ],
+        "summary": "Update Poi",
+        "description": "Update a POI.\nNote: Ideally we should use specific Update schemas (PATCH), putting full Create object for now.",
+        "operationId": "update_poi_api_v1_pois__id__put",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/MonumentCreate"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EventCreate"
+                  }
+                ],
+                "title": "Poi In"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POI"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pois/": {
+      "get": {
+        "tags": [
+          "pois"
+        ],
+        "summary": "Get Pois",
+        "description": "Get all POIs with optional filtering and geospatial search.",
+        "operationId": "get_pois_api_v1_pois__get",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by type: 'monument' or 'event'",
+              "title": "Type"
+            },
+            "description": "Filter by type: 'monument' or 'event'"
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Latitude for proximity search",
+              "title": "Lat"
+            },
+            "description": "Latitude for proximity search"
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Longitude for proximity search",
+              "title": "Lng"
+            },
+            "description": "Longitude for proximity search"
+          },
+          {
+            "name": "radius",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "description": "Radius in meters (default 1km)",
+              "default": 1000,
+              "title": "Radius"
+            },
+            "description": "Radius in meters (default 1km)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/POI"
+                  },
+                  "title": "Response Get Pois Api V1 Pois  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pois/monument": {
+      "post": {
+        "tags": [
+          "pois"
+        ],
+        "summary": "Create Monument",
+        "description": "Create a new Monument.",
+        "operationId": "create_monument_api_v1_pois_monument_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MonumentCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Monument"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pois/event": {
+      "post": {
+        "tags": [
+          "pois"
+        ],
+        "summary": "Create Event",
+        "description": "Create a new Event.",
+        "operationId": "create_event_api_v1_pois_event_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Event"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/walks/": {
+      "get": {
+        "tags": [
+          "walks"
+        ],
+        "summary": "List Walks",
+        "description": "Get all walks, optionally filtered by status.",
+        "operationId": "list_walks_api_v1_walks__get",
+        "parameters": [
+          {
+            "name": "status_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ValidationStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status Filter"
+            }
+          },
+          {
+            "name": "is_latest",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Is Latest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Walk"
+                  },
+                  "title": "Response List Walks Api V1 Walks  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "walks"
+        ],
+        "summary": "Create Walk Draft",
+        "description": "Create a new Walk Draft.",
+        "operationId": "create_walk_draft_api_v1_walks__post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalkCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Walk"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/walks/{id}": {
+      "put": {
+        "tags": [
+          "walks"
+        ],
+        "summary": "Update Walk Draft",
+        "description": "Update a Walk Draft. Not allowed for PUBLISHED walks.",
+        "operationId": "update_walk_draft_api_v1_walks__id__put",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalkUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Walk"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "walks"
+        ],
+        "summary": "Delete Walk",
+        "description": "Delete a walk.",
+        "operationId": "delete_walk_api_v1_walks__id__delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/walks/{id}/validate": {
+      "post": {
+        "tags": [
+          "walks"
+        ],
+        "summary": "Validate Walk",
+        "description": "Trigger the Validation Engine.",
+        "operationId": "validate_walk_api_v1_walks__id__validate_post",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Walk"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/walks/{id}/publish": {
+      "post": {
+        "tags": [
+          "walks"
+        ],
+        "summary": "Publish Walk",
+        "description": "Publish a walk.",
+        "operationId": "publish_walk_api_v1_walks__id__publish_post",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Walk"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/walks/{id}/new_version": {
+      "post": {
+        "tags": [
+          "walks"
+        ],
+        "summary": "New Walk Version",
+        "description": "Fork a published walk into a new Draft.",
+        "operationId": "new_walk_version_api_v1_walks__id__new_version_post",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Walk"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/explorer/walks": {
+      "get": {
+        "tags": [
+          "explorer"
+        ],
+        "summary": "Get Explorer Walks",
+        "description": "Discover published walks.",
+        "operationId": "get_explorer_walks_api_v1_explorer_walks_get",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter for feasibility on this date",
+              "title": "Date"
+            },
+            "description": "Filter for feasibility on this date"
+          },
+          {
+            "name": "is_latest",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Is Latest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Walk"
+                  },
+                  "title": "Response Get Explorer Walks Api V1 Explorer Walks Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/explorer/walks/{id}": {
+      "get": {
+        "tags": [
+          "explorer"
+        ],
+        "summary": "Get Walk Detail",
+        "description": "Get generic walk details (Safe View - Secrets Stripped).",
+        "operationId": "get_walk_detail_api_v1_explorer_walks__id__get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Walk"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/explorer/walks/{id}/start": {
+      "post": {
+        "tags": [
+          "explorer"
+        ],
+        "summary": "Start Walk Session",
+        "operationId": "start_walk_session_api_v1_explorer_walks__id__start_post",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalkSession"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/explorer/stops/{poi_id}/unlock": {
+      "post": {
+        "tags": [
+          "explorer"
+        ],
+        "summary": "Unlock Stop",
+        "description": "Attempt to unlock a POI's secret content based on location.",
+        "operationId": "unlock_stop_api_v1_explorer_stops__poi_id__unlock_post",
+        "parameters": [
+          {
+            "name": "poi_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Poi Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnlockRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnlockResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/explorer/sessions/{id}/complete": {
+      "post": {
+        "tags": [
+          "explorer"
+        ],
+        "summary": "Complete Session",
+        "operationId": "complete_session_api_v1_explorer_sessions__id__complete_post",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionCompleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalkSession"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/content/dashboard/items": {
+      "get": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Get Dashboard Items",
+        "description": "Get monuments and events near a location.\nRadius is in meters. Default 5km.",
+        "operationId": "get_dashboard_items_api_v1_content_dashboard_items_get",
+        "parameters": [
+          {
+            "name": "lat",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "title": "Lat"
+            }
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "title": "Lng"
+            }
+          },
+          {
+            "name": "radius",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 5000,
+              "title": "Radius"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/app__models__content__Monument"
+                  },
+                  "title": "Response Get Dashboard Items Api V1 Content Dashboard Items Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gamification/quest/sync": {
+      "post": {
+        "tags": [
+          "gamification"
+        ],
+        "summary": "Sync Quest State",
+        "operationId": "sync_quest_state_api_v1_gamification_quest_sync_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestStateBase"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Sync Quest State Api V1 Gamification Quest Sync Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/gamification/walk/finish": {
+      "post": {
+        "tags": [
+          "gamification"
+        ],
+        "summary": "Finish Walk",
+        "description": "Mark a walk as completed.\nAwards XP via event bus.",
+        "operationId": "finish_walk_api_v1_gamification_walk_finish_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "walk_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Walk Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Finish Walk Api V1 Gamification Walk Finish Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quizzes/monument/{monument_id}": {
+      "get": {
+        "tags": [
+          "quizzes"
+        ],
+        "summary": "Get Quizzes By Monument",
+        "description": "Get all quizzes associated with a monument.\nDoes not return the correct answer field.",
+        "operationId": "get_quizzes_by_monument_api_v1_quizzes_monument__monument_id__get",
+        "parameters": [
+          {
+            "name": "monument_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Monument Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuizResponse"
+                  },
+                  "title": "Response Get Quizzes By Monument Api V1 Quizzes Monument  Monument Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quizzes/validate": {
+      "post": {
+        "tags": [
+          "quizzes"
+        ],
+        "summary": "Validate Quizzes",
+        "description": "Validate answers, calculate XP, and update user profile.",
+        "operationId": "validate_quizzes_api_v1_quizzes_validate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/AnswerSubmission"
+                },
+                "type": "array",
+                "title": "Submissions"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/social/follow/{user_id}": {
+      "post": {
+        "tags": [
+          "social"
+        ],
+        "summary": "Follow User",
+        "description": "Follow a user.",
+        "operationId": "follow_user_api_v1_social_follow__user_id__post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Friendship"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/social/unfollow/{user_id}": {
+      "post": {
+        "tags": [
+          "social"
+        ],
+        "summary": "Unfollow User",
+        "description": "Unfollow a user.",
+        "operationId": "unfollow_user_api_v1_social_unfollow__user_id__post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/social/feed": {
+      "get": {
+        "tags": [
+          "social"
+        ],
+        "summary": "Get Activity Feed",
+        "description": "Get activity feed of followed users.",
+        "operationId": "get_activity_feed_api_v1_social_feed_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ActivityFeedItem"
+                  },
+                  "title": "Response Get Activity Feed Api V1 Social Feed Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/social/trending": {
+      "get": {
+        "tags": [
+          "social"
+        ],
+        "summary": "Get Trending Walks",
+        "description": "Get trending walks.\nCurrently returns a placeholder or empty list until Trending algorithm is implemented.",
+        "operationId": "get_trending_walks_api_v1_social_trending_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActivityFeedItem": {
+        "properties": {
+          "_id": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PydanticObjectId"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "MongoDB document ObjectID"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "target_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Id"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata",
+            "default": {}
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "type"
+        ],
+        "title": "ActivityFeedItem",
+        "description": "Represents an event in the social feed (e.g., User X completed Walk Y).",
+        "example": {
+          "created_at": "2023-01-01T12:00:00Z",
+          "metadata": {
+            "score": 95,
+            "walk_name": "Brutalist London"
+          },
+          "target_id": "walk_123",
+          "type": "walk_completed",
+          "user_id": "123e4567-e89b-12d3-a456-426614174000"
+        }
+      },
+      "AnswerSubmission": {
+        "properties": {
+          "quiz_id": {
+            "type": "string",
+            "title": "Quiz Id"
+          },
+          "answer_index": {
+            "type": "integer",
+            "title": "Answer Index"
+          }
+        },
+        "type": "object",
+        "required": [
+          "quiz_id",
+          "answer_index"
+        ],
+        "title": "AnswerSubmission"
+      },
+      "Body_login_access_token_api_v1_auth_access_token_post": {
+        "properties": {
+          "grant_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^password$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grant Type"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "title": "Password"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "default": ""
+          },
+          "client_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Id"
+          },
+          "client_secret": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "format": "password",
+            "title": "Client Secret"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "Body_login_access_token_api_v1_auth_access_token_post"
+      },
+      "Body_request_verification_api_v1_auth_request_verification_post": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "Body_request_verification_api_v1_auth_request_verification_post"
+      },
+      "Body_verify_email_api_v1_auth_verify_email_post": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "Body_verify_email_api_v1_auth_verify_email_post"
+      },
+      "DayOfWeek": {
+        "type": "string",
+        "enum": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+          "Sunday"
+        ],
+        "title": "DayOfWeek"
+      },
+      "Difficulty": {
+        "type": "string",
+        "enum": [
+          "Easy",
+          "Medium",
+          "Hard"
+        ],
+        "title": "Difficulty"
+      },
+      "Event": {
+        "properties": {
+          "_id": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PydanticObjectId"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "MongoDB document ObjectID"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Public teaser/description"
+          },
+          "short_description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 150
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Description"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoObject"
+          },
+          "images": {
+            "items": {
+              "$ref": "#/components/schemas/ImageMedia"
+            },
+            "type": "array",
+            "title": "Images",
+            "default": []
+          },
+          "resources": {
+            "items": {
+              "$ref": "#/components/schemas/ExternalResource"
+            },
+            "type": "array",
+            "title": "Resources",
+            "default": []
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags",
+            "default": []
+          },
+          "hidden_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hidden Description",
+            "description": "Detailed history/facts revealed on arrival"
+          },
+          "hidden_media": {
+            "items": {
+              "$ref": "#/components/schemas/ExternalResource"
+            },
+            "type": "array",
+            "title": "Hidden Media",
+            "default": []
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start Time"
+          },
+          "end_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End Time"
+          },
+          "schedule_rules": {
+            "items": {
+              "$ref": "#/components/schemas/ScheduleRule"
+            },
+            "type": "array",
+            "title": "Schedule Rules",
+            "default": []
+          },
+          "ticket_link": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2083,
+                "minLength": 1,
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticket Link"
+          },
+          "price_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "location",
+          "start_time",
+          "end_time"
+        ],
+        "title": "Event"
+      },
+      "EventCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "short_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Description"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoObject"
+          },
+          "images": {
+            "items": {
+              "$ref": "#/components/schemas/ImageMedia"
+            },
+            "type": "array",
+            "title": "Images",
+            "default": []
+          },
+          "resources": {
+            "items": {
+              "$ref": "#/components/schemas/ExternalResource"
+            },
+            "type": "array",
+            "title": "Resources",
+            "default": []
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags",
+            "default": []
+          },
+          "hidden_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hidden Description"
+          },
+          "hidden_media": {
+            "items": {
+              "$ref": "#/components/schemas/ExternalResource"
+            },
+            "type": "array",
+            "title": "Hidden Media",
+            "default": []
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start Time"
+          },
+          "end_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End Time"
+          },
+          "schedule_rules": {
+            "items": {
+              "$ref": "#/components/schemas/ScheduleRule"
+            },
+            "type": "array",
+            "title": "Schedule Rules",
+            "default": []
+          },
+          "ticket_link": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2083,
+                "minLength": 1,
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticket Link"
+          },
+          "price_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "location",
+          "start_time",
+          "end_time"
+        ],
+        "title": "EventCreate"
+      },
+      "ExternalResource": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 2083,
+            "minLength": 1,
+            "format": "uri",
+            "title": "Url"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ResourceType"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "url",
+          "type"
+        ],
+        "title": "ExternalResource"
+      },
+      "Friendship": {
+        "properties": {
+          "_id": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PydanticObjectId"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "MongoDB document ObjectID"
+          },
+          "follower_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Follower Id"
+          },
+          "followed_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Followed Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "follower_id",
+          "followed_id"
+        ],
+        "title": "Friendship",
+        "description": "Represents a directional follow relationship: Follower follows Followed.",
+        "example": {
+          "created_at": "2023-01-01T12:00:00Z",
+          "followed_id": "987fcdeb-51a2-43c4-9876-543210987654",
+          "follower_id": "123e4567-e89b-12d3-a456-426614174000"
+        }
+      },
+      "GeoLineString": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "default": "LineString"
+          },
+          "coordinates": {
+            "items": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Coordinates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "coordinates"
+        ],
+        "title": "GeoLineString"
+      },
+      "GeoObject": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "default": "Point"
+          },
+          "coordinates": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Coordinates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "coordinates"
+        ],
+        "title": "GeoObject"
+      },
+      "GeoPoint": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "default": "Point"
+          },
+          "coordinates": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Coordinates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "coordinates"
+        ],
+        "title": "GeoPoint"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ImageMedia": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "maxLength": 2083,
+            "minLength": 1,
+            "format": "uri",
+            "title": "Url"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "alt_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alt Text"
+          },
+          "credits": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credits"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "title": "ImageMedia"
+      },
+      "Monument": {
+        "properties": {
+          "_id": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PydanticObjectId"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "MongoDB document ObjectID"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Public teaser/description"
+          },
+          "short_description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 150
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Description"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoObject"
+          },
+          "images": {
+            "items": {
+              "$ref": "#/components/schemas/ImageMedia"
+            },
+            "type": "array",
+            "title": "Images",
+            "default": []
+          },
+          "resources": {
+            "items": {
+              "$ref": "#/components/schemas/ExternalResource"
+            },
+            "type": "array",
+            "title": "Resources",
+            "default": []
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags",
+            "default": []
+          },
+          "hidden_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hidden Description",
+            "description": "Detailed history/facts revealed on arrival"
+          },
+          "hidden_media": {
+            "items": {
+              "$ref": "#/components/schemas/ExternalResource"
+            },
+            "type": "array",
+            "title": "Hidden Media",
+            "default": []
+          },
+          "architectural_style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Architectural Style"
+          },
+          "built_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Built Year"
+          },
+          "opening_rules": {
+            "items": {
+              "$ref": "#/components/schemas/ScheduleRule"
+            },
+            "type": "array",
+            "title": "Opening Rules",
+            "default": []
+          },
+          "opening_hours_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opening Hours Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "location"
+        ],
+        "title": "Monument"
+      },
+      "MonumentCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "short_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Description"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoObject"
+          },
+          "images": {
+            "items": {
+              "$ref": "#/components/schemas/ImageMedia"
+            },
+            "type": "array",
+            "title": "Images",
+            "default": []
+          },
+          "resources": {
+            "items": {
+              "$ref": "#/components/schemas/ExternalResource"
+            },
+            "type": "array",
+            "title": "Resources",
+            "default": []
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags",
+            "default": []
+          },
+          "hidden_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hidden Description"
+          },
+          "hidden_media": {
+            "items": {
+              "$ref": "#/components/schemas/ExternalResource"
+            },
+            "type": "array",
+            "title": "Hidden Media",
+            "default": []
+          },
+          "architectural_style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Architectural Style"
+          },
+          "built_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Built Year"
+          },
+          "opening_rules": {
+            "items": {
+              "$ref": "#/components/schemas/ScheduleRule"
+            },
+            "type": "array",
+            "title": "Opening Rules",
+            "default": []
+          },
+          "opening_hours_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opening Hours Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "location"
+        ],
+        "title": "MonumentCreate"
+      },
+      "POI": {
+        "properties": {
+          "_id": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PydanticObjectId"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "MongoDB document ObjectID"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Public teaser/description"
+          },
+          "short_description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 150
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Description"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoObject"
+          },
+          "images": {
+            "items": {
+              "$ref": "#/components/schemas/ImageMedia"
+            },
+            "type": "array",
+            "title": "Images",
+            "default": []
+          },
+          "resources": {
+            "items": {
+              "$ref": "#/components/schemas/ExternalResource"
+            },
+            "type": "array",
+            "title": "Resources",
+            "default": []
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags",
+            "default": []
+          },
+          "hidden_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hidden Description",
+            "description": "Detailed history/facts revealed on arrival"
+          },
+          "hidden_media": {
+            "items": {
+              "$ref": "#/components/schemas/ExternalResource"
+            },
+            "type": "array",
+            "title": "Hidden Media",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "location"
+        ],
+        "title": "POI"
+      },
+      "PydanticObjectId": {
+        "type": "string",
+        "maxLength": 24,
+        "minLength": 24,
+        "pattern": "^[0-9a-f]{24}$",
+        "example": "5eb7cf5a86d9755df3a6c593"
+      },
+      "QuestStateBase": {
+        "properties": {
+          "active_walk_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Walk Id"
+          },
+          "current_stop_index": {
+            "type": "integer",
+            "title": "Current Stop Index",
+            "default": 0
+          },
+          "accumulated_xp": {
+            "type": "integer",
+            "title": "Accumulated Xp",
+            "default": 0
+          },
+          "visited_stop_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Visited Stop Ids",
+            "default": []
+          },
+          "last_updated": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Updated"
+          }
+        },
+        "type": "object",
+        "title": "QuestStateBase"
+      },
+      "QuizResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "monument_id": {
+            "type": "string",
+            "title": "Monument Id"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Options"
+          },
+          "xp_reward": {
+            "type": "integer",
+            "title": "Xp Reward"
+          },
+          "difficulty": {
+            "type": "string",
+            "title": "Difficulty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "monument_id",
+          "question",
+          "options",
+          "xp_reward",
+          "difficulty"
+        ],
+        "title": "QuizResponse"
+      },
+      "ResourceType": {
+        "type": "string",
+        "enum": [
+          "ticket",
+          "website",
+          "social",
+          "article",
+          "video",
+          "audio_guide"
+        ],
+        "title": "ResourceType"
+      },
+      "ScheduleRule": {
+        "properties": {
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/DayOfWeek"
+            },
+            "type": "array",
+            "title": "Days"
+          },
+          "open_time": {
+            "type": "string",
+            "pattern": "^\\d{2}:\\d{2}$",
+            "title": "Open Time"
+          },
+          "close_time": {
+            "type": "string",
+            "pattern": "^\\d{2}:\\d{2}$",
+            "title": "Close Time"
+          }
+        },
+        "type": "object",
+        "required": [
+          "days",
+          "open_time",
+          "close_time"
+        ],
+        "title": "ScheduleRule"
+      },
+      "SessionCompleteRequest": {
+        "properties": {
+          "rating": {
+            "type": "integer",
+            "title": "Rating"
+          },
+          "review_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rating"
+        ],
+        "title": "SessionCompleteRequest"
+      },
+      "UnlockRequest": {
+        "properties": {
+          "lat": {
+            "type": "number",
+            "title": "Lat"
+          },
+          "lng": {
+            "type": "number",
+            "title": "Lng"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lat",
+          "lng"
+        ],
+        "title": "UnlockRequest"
+      },
+      "UnlockResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "hidden_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hidden Description"
+          },
+          "hidden_media": {
+            "items": {
+              "$ref": "#/components/schemas/ExternalResource"
+            },
+            "type": "array",
+            "title": "Hidden Media",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "title": "UnlockResponse"
+      },
+      "UserCreate": {
+        "properties": {
+          "handle": {
+            "type": "string",
+            "title": "Handle"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "handle",
+          "email",
+          "password"
+        ],
+        "title": "UserCreate"
+      },
+      "UserLogin": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "UserLogin"
+      },
+      "UserResponse": {
+        "properties": {
+          "handle": {
+            "type": "string",
+            "title": "Handle"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "level": {
+            "type": "integer",
+            "title": "Level"
+          },
+          "xp": {
+            "type": "integer",
+            "title": "Xp"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/UserStats"
+          },
+          "collection": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Collection"
+          },
+          "joined_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Joined Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "handle",
+          "email",
+          "id",
+          "level",
+          "xp",
+          "stats",
+          "collection",
+          "joined_date"
+        ],
+        "title": "UserResponse"
+      },
+      "UserStats": {
+        "properties": {
+          "distance": {
+            "type": "string",
+            "title": "Distance",
+            "default": "0km"
+          },
+          "cities": {
+            "type": "integer",
+            "title": "Cities",
+            "default": 0
+          },
+          "secrets": {
+            "type": "integer",
+            "title": "Secrets",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "UserStats"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ValidationResponse": {
+        "properties": {
+          "total_xp": {
+            "type": "integer",
+            "title": "Total Xp"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationResult"
+            },
+            "type": "array",
+            "title": "Results"
+          },
+          "new_user_level": {
+            "type": "integer",
+            "title": "New User Level"
+          },
+          "new_user_xp": {
+            "type": "integer",
+            "title": "New User Xp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_xp",
+          "results",
+          "new_user_level",
+          "new_user_xp"
+        ],
+        "title": "ValidationResponse"
+      },
+      "ValidationResult": {
+        "properties": {
+          "quiz_id": {
+            "type": "string",
+            "title": "Quiz Id"
+          },
+          "correct": {
+            "type": "boolean",
+            "title": "Correct"
+          },
+          "correct_answer": {
+            "type": "integer",
+            "title": "Correct Answer"
+          },
+          "xp_earned": {
+            "type": "integer",
+            "title": "Xp Earned"
+          }
+        },
+        "type": "object",
+        "required": [
+          "quiz_id",
+          "correct",
+          "correct_answer",
+          "xp_earned"
+        ],
+        "title": "ValidationResult"
+      },
+      "ValidationStatus": {
+        "type": "string",
+        "enum": [
+          "DRAFT",
+          "GREEN",
+          "YELLOW",
+          "RED",
+          "PUBLISHED"
+        ],
+        "title": "ValidationStatus"
+      },
+      "Walk": {
+        "properties": {
+          "_id": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PydanticObjectId"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "MongoDB document ObjectID"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "cover_image": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImageMedia"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stops": {
+            "items": {
+              "anyOf": [
+                {
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "title": "Id"
+                    },
+                    "collection": {
+                      "type": "string",
+                      "title": "Collection"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "collection"
+                  ]
+                },
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Stops",
+            "default": []
+          },
+          "path": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoLineString"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "estimated_duration_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Duration Minutes"
+          },
+          "distance_km": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distance Km"
+          },
+          "difficulty": {
+            "$ref": "#/components/schemas/Difficulty",
+            "default": "Medium"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ValidationStatus",
+            "default": "DRAFT"
+          },
+          "validation_messages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Validation Messages",
+            "default": []
+          },
+          "creator_id": {
+            "type": "string",
+            "title": "Creator Id",
+            "default": "ADMIN"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version",
+            "default": 1
+          },
+          "previous_version_id": {
+            "anyOf": [
+              {
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "title": "Id"
+                  },
+                  "collection": {
+                    "type": "string",
+                    "title": "Collection"
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "id",
+                  "collection"
+                ]
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Version Id"
+          },
+          "next_version_id": {
+            "anyOf": [
+              {
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "title": "Id"
+                  },
+                  "collection": {
+                    "type": "string",
+                    "title": "Collection"
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "id",
+                  "collection"
+                ]
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Version Id"
+          },
+          "is_latest": {
+            "type": "boolean",
+            "title": "Is Latest",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "description"
+        ],
+        "title": "Walk"
+      },
+      "WalkCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "stops": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Stops",
+            "default": []
+          },
+          "difficulty": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Difficulty"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "Medium"
+          },
+          "estimated_duration_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Duration Minutes",
+            "default": 90
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "description"
+        ],
+        "title": "WalkCreate"
+      },
+      "WalkSession": {
+        "properties": {
+          "_id": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PydanticObjectId"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "MongoDB document ObjectID"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "default": "ADMIN"
+          },
+          "walk_id": {
+            "anyOf": [
+              {
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "title": "Id"
+                  },
+                  "collection": {
+                    "type": "string",
+                    "title": "Collection"
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "id",
+                  "collection"
+                ]
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              }
+            ],
+            "title": "Walk Id"
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start Time"
+          },
+          "end_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Time"
+          },
+          "unlocked_stops": {
+            "items": {
+              "$ref": "#/components/schemas/PydanticObjectId"
+            },
+            "type": "array",
+            "title": "Unlocked Stops",
+            "default": []
+          },
+          "is_completed": {
+            "type": "boolean",
+            "title": "Is Completed",
+            "default": false
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 5.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rating"
+          },
+          "review_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "walk_id"
+        ],
+        "title": "WalkSession",
+        "description": "Tracks a user's active attempt at a walk."
+      },
+      "WalkUpdate": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "stops": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stops"
+          },
+          "estimated_duration_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Duration Minutes"
+          },
+          "difficulty": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Difficulty"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "WalkUpdate"
+      },
+      "app__models__content__Monument": {
+        "properties": {
+          "_id": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PydanticObjectId"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "MongoDB document ObjectID"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoPoint"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "swagg_reward_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Swagg Reward Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "location",
+          "category"
+        ],
+        "title": "Monument"
+      }
+    },
+    "securitySchemes": {
+      "OAuth2PasswordBearer": {
+        "type": "oauth2",
+        "flows": {
+          "password": {
+            "scopes": {},
+            "tokenUrl": "/api/v1/auth/access-token"
+          }
+        }
+      }
+    }
+  }
+}

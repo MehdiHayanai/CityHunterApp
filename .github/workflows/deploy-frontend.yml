@@ -1,0 +1,64 @@
+name: Deploy Frontend to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'cityhunter/**'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Google Cloud Auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: '>= 416.0.0'
+
+      - name: Deploy Frontend to Cloud Run
+        working-directory: ./cityhunter
+        run: |
+          gcloud run deploy cityhunter-frontend \
+            --source . \
+            --region europe-west9 \
+            --allow-unauthenticated \
+            --quiet \
+            --set-env-vars "API_BASE_KEY=${{ secrets.API_BASE_KEY }}" \
+            --set-env-vars "BACKEND_API_URL=${{ secrets.BACKEND_API_URL }}" \
+            --set-env-vars "NODE_ENV=production"
+
+      - name: Post-Deploy Optimization
+        run: |
+          # Ensures we scale to zero to keep the bill at $0 and use CPU boost for faster startups
+          gcloud run services update cityhunter-frontend \
+            --min-instances 0 \
+            --cpu-boost \
+            --region europe-west9
+
+      - name: Get Service URL
+        id: get-url
+        run: |
+          SERVICE_URL=$(gcloud run services describe cityhunter-frontend \
+            --region europe-west9 \
+            --format='value(status.url)')
+          echo "Frontend deployed at: $SERVICE_URL"
+          echo "service_url=$SERVICE_URL" >> $GITHUB_OUTPUT
+
+      - name: Update Backend CORS (Optional)
+        run: |
+          echo "Remember to update backend CORS with frontend URL: ${{ steps.get-url.outputs.service_url }}"
