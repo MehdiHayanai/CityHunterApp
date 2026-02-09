@@ -23,6 +23,7 @@ export default function LeafletMap({ items, selectedId, walkPath, isCreatingWalk
   const mapInstance = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const polylineRef = useRef<L.Polyline | null>(null);
+  const lastStopIdsRef = useRef<string>('');
   
   const { theme } = useThemeContext();
   const { mapCenter: contextCenter, setMapCenter: setContextCenter, mapZoom: contextZoom, setMapZoom: setContextZoom } = useDashboardContext();
@@ -193,11 +194,13 @@ export default function LeafletMap({ items, selectedId, walkPath, isCreatingWalk
       markersRef.current.push(marker);
     });
 
-    // 4. Polylines
+    // 4. Polylines & Auto-zoom Guard
     if (polylineRef.current) {
       map.removeLayer(polylineRef.current);
       polylineRef.current = null;
     }
+ 
+    const currentStopIds = walkPath?.map(p => p.id).join(',') || '';
 
     if (walkPath && walkPath.length > 1) {
       console.log("[DEBUG] Rendering Walk Line for stops:", walkPath.map(p => p.name));
@@ -210,7 +213,14 @@ export default function LeafletMap({ items, selectedId, walkPath, isCreatingWalk
         lineCap: 'round'
       }).addTo(map);
       
-      map.fitBounds(polylineRef.current.getBounds(), { padding: [50, 50] });
+      // ONLY fitBounds if the stop list has CHANGED
+      if (currentStopIds !== lastStopIdsRef.current) {
+          console.log("[MAP] Walk changed, fitting bounds");
+          map.fitBounds(polylineRef.current.getBounds(), { padding: [50, 50] });
+          lastStopIdsRef.current = currentStopIds;
+      }
+    } else {
+        lastStopIdsRef.current = '';
     }
 
     // 5. Global Listener for Popup Buttons (React Router Integration)

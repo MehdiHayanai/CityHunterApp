@@ -196,7 +196,7 @@ export default function ChatInterface({ onClose }: { onClose: () => void }) {
                 className={`w-8 h-8 flex items-center justify-center bg-transparent hover:bg-white/10 rounded-full transition-colors cursor-pointer text-secondary hover:text-accent tooltip ${messages.length === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
                 title="Reset Session (Delete Memory)"
             >
-                <i className="fa-solid fa-trash-can text-sm"></i>
+                <i className="fa-solid fa-arrow-rotate-right text-sm"></i>
             </button>
 
             <button

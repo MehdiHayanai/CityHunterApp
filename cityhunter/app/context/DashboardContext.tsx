@@ -256,12 +256,23 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
 
             if (monumentPois.length > 0) {
                 const mappedMonuments = monumentPois.map(mapPOIToItem);
-                setMonuments(mappedMonuments);
+                setMonuments(prev => {
+                    // Combine new results with existing monuments that are part of a walk
+                    const walkItemIds = new Set([...(activeWalk?.stopIds || []), ...newWalkStops]);
+                    const preserved = prev.filter(item => walkItemIds.has(item.id));
+                    const newIds = new Set(mappedMonuments.map((m: DashboardItem) => m.id));
+                    return [...preserved.filter(p => !newIds.has(p.id)), ...mappedMonuments];
+                });
             }
 
             if (eventPois.length > 0) {
                 const mappedEvents = eventPois.map(mapPOIToItem);
-                setEvents(mappedEvents);
+                setEvents(prev => {
+                    const walkItemIds = new Set([...(activeWalk?.stopIds || []), ...newWalkStops]);
+                    const preserved = prev.filter(item => walkItemIds.has(item.id));
+                    const newIds = new Set(mappedEvents.map((e: DashboardItem) => e.id));
+                    return [...preserved.filter(p => !newIds.has(p.id)), ...mappedEvents];
+                });
             }
             
             // 3. Fetch Walks
@@ -437,8 +448,24 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
                 status: p.status || 'LIVE'
             });
 
-           if (monumentPois) setMonuments(monumentPois.map(mapPOIToItem));
-           if (eventPois) setEvents(eventPois.map(mapPOIToItem));
+           if (monumentPois) {
+               const mapped = monumentPois.map(mapPOIToItem);
+               setMonuments(prev => {
+                    const walkItemIds = new Set([...(activeWalk?.stopIds || []), ...newWalkStops]);
+                    const preserved = prev.filter(item => walkItemIds.has(item.id));
+                    const newIds = new Set(mapped.map((m: DashboardItem) => m.id));
+                    return [...preserved.filter(p => !newIds.has(p.id)), ...mapped];
+               });
+           }
+           if (eventPois) {
+                const mapped = eventPois.map(mapPOIToItem);
+                setEvents(prev => {
+                     const walkItemIds = new Set([...(activeWalk?.stopIds || []), ...newWalkStops]);
+                     const preserved = prev.filter(item => walkItemIds.has(item.id));
+                     const newIds = new Set(mapped.map((e: DashboardItem) => e.id));
+                     return [...preserved.filter(p => !newIds.has(p.id)), ...mapped];
+                });
+           }
 
       } catch (e) {
           console.error("Failed to fetch location POIs", e);

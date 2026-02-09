@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { QuizResponse, AnswerResponse } from '../../services/quiz';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface ExperienceQuizProps {
     quiz: QuizResponse | null;
@@ -16,6 +17,8 @@ export const ExperienceQuiz = ({ quiz, loading, onStart, onAnswer, onNext }: Exp
     const [submitting, setSubmitting] = useState(false);
     const [result, setResult] = useState<AnswerResponse | null>(null);
     const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+    const [hasAttempted, setHasAttempted] = useState(false);
+    const refreshUser = useAuthStore(state => state.refreshUser);
 
     // State management for quiz flow
     useEffect(() => {
@@ -43,6 +46,9 @@ export const ExperienceQuiz = ({ quiz, loading, onStart, onAnswer, onNext }: Exp
         try {
             const res = await onAnswer(idx);
             setResult(res);
+            if (res.success) {
+                refreshUser();
+            }
             setStep(2); // Move to result view
         } catch (e) {
             console.error("Failed to submit answer", e);
@@ -56,7 +62,7 @@ export const ExperienceQuiz = ({ quiz, loading, onStart, onAnswer, onNext }: Exp
     if (step === 0) {
         return (
             <div className="text-center py-12 animate-in fade-in zoom-in duration-300">
-                <div className="relative w-24 h-24 mx-auto mb-6 group cursor-pointer" onClick={() => { setStep(0.5); onStart(); }}>
+                <div className="relative w-24 h-24 mx-auto mb-6 group cursor-pointer" onClick={() => { setStep(0.5); setHasAttempted(true); onStart(); }}>
                     {/* Pulsing rings */}
                     <div className="absolute inset-0 bg-accent rounded-full animate-ping opacity-20"></div>
                     <div className="absolute inset-2 bg-accent/20 rounded-full animate-pulse"></div>
@@ -74,7 +80,7 @@ export const ExperienceQuiz = ({ quiz, loading, onStart, onAnswer, onNext }: Exp
                     Test your knowledge to decrypt the node.
                 </p>
                 <button 
-                    onClick={() => { setStep(0.5); onStart(); }}
+                    onClick={() => { setStep(0.5); setHasAttempted(true); onStart(); }}
                     disabled={loading}
                     className="bg-primary text-canvas font-bold py-4 px-8 rounded-2xl hover:bg-accent hover:text-black hover:scale-105 transition-all shadow-xl shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -85,19 +91,38 @@ export const ExperienceQuiz = ({ quiz, loading, onStart, onAnswer, onNext }: Exp
     }
     
     // NO MORE QUIZZES / EMPTY STATE (Handled if quiz is null after loading)
-    if (!quiz && !loading && step !== 0) {
+    if (!quiz && !loading && step !== 0 && hasAttempted) {
          return (
-            <div className="text-center py-12 animate-in zoom-in duration-500">
-                <div className="w-24 h-24 bg-surface/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/10">
-                    <i className="fa-solid fa-check-double text-4xl text-secondary"></i>
+            <div className="text-center py-12 animate-in fade-in zoom-in duration-700">
+                <div className="relative w-32 h-32 mx-auto mb-8">
+                    {/* Decorative aura */}
+                    <div className="absolute inset-0 bg-accent rounded-full blur-3xl opacity-20 animate-pulse"></div>
+                    
+                    <div className="relative w-full h-full bg-surface/50 rounded-full flex items-center justify-center border-2 border-accent/30 shadow-[0_0_50px_rgba(204,255,0,0.2)] overflow-hidden">
+                        <i className="fa-solid fa-trophy text-5xl text-accent drop-shadow-[0_0_15px_rgba(204,255,0,0.6)]"></i>
+                        
+                        {/* Shooting stars/particles effect via CSS animation if available, or just static sparkle */}
+                        <div className="absolute top-4 right-4 text-accent/40 animate-bounce">
+                           <i className="fa-solid fa-sparkles text-xs"></i>
+                        </div>
+                    </div>
                 </div>
-                <h2 className="text-2xl font-black mb-2 uppercase italic text-secondary">Sector Cleared</h2>
-                <p className="text-secondary mb-8 font-mono">No further data nodes detected at this location.</p>
+
+                <h2 className="text-3xl font-black mb-3 uppercase italic tracking-tighter text-primary">
+                    ALL SECRETS UNLOCKED
+                </h2>
+                
+                <div className="bg-accent/10 border border-accent/20 rounded-xl p-4 mb-8 max-w-sm mx-auto">
+                    <p className="text-accent font-mono text-xs font-bold leading-relaxed uppercase tracking-widest">
+                        Protocol Complete: You have extracted all available intel from this sector. Your mastery of this location is at 100%.
+                    </p>
+                </div>
                 
                 <button 
                     onClick={() => setStep(0)}
-                    className="block mx-auto text-xs font-bold text-secondary hover:text-primary tracking-widest uppercase hover:underline"
+                    className="group flex items-center gap-2 mx-auto text-sm font-bold text-secondary hover:text-accent tracking-widest uppercase transition-all"
                 >
+                    <i className="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
                     Return to Overview
                 </button>
             </div>

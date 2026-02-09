@@ -4,9 +4,11 @@ import { useDashboardContext } from '../../context/DashboardContext';
 import { getItemById } from '../../constants/dashboard-constants';
 import { useState, useEffect } from 'react';
 import { QuizService } from '../../services/quiz';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function QuestEncounterModal() {
     const { questState, updateQuestState, activeWalk, excludedStopIds, monuments, events } = useDashboardContext();
+    const refreshUser = useAuthStore(state => state.refreshUser);
     
     // Helper to find match in backend data
     const getItem = (id: string | number) => {
@@ -21,6 +23,7 @@ export default function QuestEncounterModal() {
     const [isConfirmed, setIsConfirmed] = useState(false);
     const [isCorrect, setIsCorrect] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [hasAttempted, setHasAttempted] = useState(false);
 
     const target = questState.pendingEncounterId ? getItem(questState.pendingEncounterId) : null;
 
@@ -35,13 +38,14 @@ export default function QuestEncounterModal() {
             async function loadQuiz() {
                 try {
                     updateQuestState({ quizLoading: true, quizError: null });
+                    setHasAttempted(true);
                     const quiz = await QuizService.getNextQuiz(String(target.id));
                     updateQuestState({ currentQuiz: quiz, quizLoading: false });
                     
-                    // If no quiz is available, automatically validate and proceed
+                    // If no quiz is available, we stay in the modal to show the "All Secrets Unlocked" state
+                    // The UI will handle rendering the achievement screen.
                     if (!quiz) {
-                        console.log("No challenge available for this sector. Auto-proceeding.");
-                        proceedToNext();
+                        console.log("No challenge available for this sector.");
                     }
                 } catch (err: any) {
                     console.error("Failed to load quest quiz:", err);
@@ -76,7 +80,9 @@ export default function QuestEncounterModal() {
                         const res = await QuizService.submitAnswer(currentQuiz.id, selectedAnswer);
                         setIsConfirmed(true);
                         setIsCorrect(res.success);
-                        // Store total XP gained if we want to sync it here, or just wait for reward phase
+                        if (res.success) {
+                            refreshUser();
+                        }
                     } catch (e) {
                         console.error("Failed to verify answer:", e);
                         alert("Grid verification failed. Check connection.");
@@ -186,28 +192,20 @@ export default function QuestEncounterModal() {
                                         RETRY UPLINK
                                     </button>
                                 </div>
-                            ) : !currentQuiz ? (
-                                <div className="py-20 text-center">
-                                    <i className="fa-solid fa-spinner fa-spin text-4xl text-secondary mb-4"></i>
-                                    <p className="font-mono text-xs text-secondary animate-pulse uppercase tracking-[0.2em]">Authenticating Sector Access...</p>
-                                </div>
-                            ) : (
+                            ) : currentQuiz ? (
                                 <>
                                     <h3 className="text-xl font-bold mb-8 leading-tight text-primary">{currentQuiz.question}</h3>
 
                                     <div className="space-y-3">
                                         {currentQuiz.options.map((opt, i) => {
-                                            // Style Logic
                                             let styleClass = 'bg-surface border-divider/10 hover:border-accent hover:bg-surface/80 text-secondary hover:text-primary';
                                             let iconClass = '';
 
                                             if (selectedAnswer === i) {
                                                 if (!isConfirmed) {
-                                                    // Selected, Not Confirmed (Neutral)
                                                     styleClass = 'bg-blue-500/10 border-blue-500 text-blue-400';
                                                     iconClass = submitting ? 'fa-spinner fa-spin' : 'fa-circle-dot'; 
                                                 } else {
-                                                    // Confirmed: Show Result
                                                     if (isCorrect) {
                                                         styleClass = 'bg-green-500/20 border-green-500 text-green-400';
                                                         iconClass = 'fa-check';
@@ -242,8 +240,8 @@ export default function QuestEncounterModal() {
                                         onClick={handleAction}
                                         className={`w-full mt-8 py-4 font-bold rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg ${
                                             isConfirmed 
-                                                ? 'bg-primary text-canvas hover:bg-accent hover:text-black' // Continue
-                                                : 'bg-accent text-black hover:bg-white' // Confirm
+                                                ? 'bg-primary text-canvas hover:bg-accent hover:text-black' 
+                                                : 'bg-accent text-black hover:bg-white'
                                         }`}
                                     >
                                         {submitting ? 'COMMUNICATING...' : selectedAnswer === null 
@@ -252,6 +250,38 @@ export default function QuestEncounterModal() {
                                         }
                                     </button>
                                 </>
+                            ) : (hasAttempted && !questState.quizLoading) ? (
+                                <div className="py-8 text-center animate-in fade-in zoom-in duration-700">
+                                    <div className="relative w-24 h-24 mx-auto mb-6">
+                                        <div className="absolute inset-0 bg-accent rounded-full blur-2xl opacity-20 animate-pulse"></div>
+                                        <div className="relative w-full h-full bg-surface/50 rounded-full flex items-center justify-center border border-accent/30 shadow-[0_0_30px_rgba(204,255,0,0.15)]">
+                                            <i className="fa-solid fa-trophy text-4xl text-accent"></i>
+                                        </div>
+                                    </div>
+
+                                    <h3 className="text-xl font-black mb-2 tracking-tighter text-primary uppercase italic">
+                                        All Secrets Unlocked
+                                    </h3>
+                                    
+                                    <p className="text-secondary font-mono text-[10px] mb-8 leading-relaxed uppercase tracking-widest px-4">
+                                        You have extracted all available intel from this sector. Mastery achieved.
+                                    </p>
+
+                                    <button 
+                                        onClick={() => {
+                                            setIsCorrect(true);
+                                            proceedToNext();
+                                        }}
+                                        className="w-full py-4 bg-accent text-black font-black rounded-2xl hover:bg-white transition-all shadow-lg shadow-accent/20 uppercase tracking-widest text-xs"
+                                    >
+                                        CONTINUE MISSION <i className="fa-solid fa-arrow-right ml-1"></i>
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="py-20 text-center">
+                                    <i className="fa-solid fa-spinner fa-spin text-4xl text-accent mb-4"></i>
+                                    <p className="font-mono text-xs text-secondary animate-pulse uppercase tracking-[0.2em]">Establishing Neural Link...</p>
+                                </div>
                             )}
                         </div>
                     </>
