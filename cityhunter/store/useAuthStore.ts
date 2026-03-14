@@ -99,6 +99,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: () => {
     Cookies.remove('access_token');
     authService.logout(); // Clears any other local storage if needed
+    
+    // Clear application state to prevent leaking to the next user
+    if (typeof window !== 'undefined') {
+        localStorage.removeItem('cityhunter_quest_state');
+        localStorage.removeItem('custom_walks');
+        localStorage.removeItem('cityhunter_map_center');
+        localStorage.removeItem('cityhunter_map_zoom');
+        localStorage.removeItem('cityhunter_active_session');
+        localStorage.removeItem('cityhunter_chat_session_id');
+    }
+
     set({ user: null, isAuthenticated: false });
     // Optional: Redirect to login
     // Force full reload to clear state
