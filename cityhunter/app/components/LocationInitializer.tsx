@@ -2,11 +2,14 @@
 
 import { useEffect } from 'react';
 import { useDashboardContext } from '../context/DashboardContext';
+import { useAuthStore } from '../../store/useAuthStore';
 
 export default function LocationInitializer() {
     const { updateQuestState, questState } = useDashboardContext();
+    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
     useEffect(() => {
+        if (!isAuthenticated) return;
         if (!('geolocation' in navigator)) return;
 
         // Check if we should prompt

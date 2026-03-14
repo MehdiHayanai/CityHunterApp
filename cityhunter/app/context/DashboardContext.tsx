@@ -157,7 +157,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
      const allSaved = QuestPersistence.getAllSavedQuests();
      // Find the most recently active one or just the first active one
      // For now, find first where isActive is true
-     const activeWalkIdStr = Object.keys(allSaved).find(id => allSaved[Number(id)].isActive);
+     const activeWalkIdStr = Object.keys(allSaved).find(id => allSaved[Number(id)]?.isActive);
      
      if (activeWalkIdStr) {
          const walkId = Number(activeWalkIdStr);
