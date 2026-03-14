@@ -10,6 +10,9 @@ All notable changes to this project will be documented in this file.
     - **Session Cleanup**: Properly removes access token and redirects to login page.
 
 ### Fixed
+- **Autorestore Crash**: Resolved an `Uncaught TypeError: Cannot read properties of undefined (reading 'isActive')` crash that occurred dynamically during the auto-restore of saved quests. Added optional chaining (`?.`) when searching saved sessions.
+- **Premature Location Prompts**: Restricted the geolocation prompt within `LocationInitializer` to fire exclusively when users are authenticated.
+- **Session State Leakage**: Enhanced the `logout` function in `useAuthStore` to comprehensively clear application memory stored in `localStorage` (quest states, custom walks, maps coordinates, and chat history), preventing data contamination between different users utilizing the same browser.
 - **Profile XP Bar**: Removed XP progress bar from friends' profiles.
     - **Conditional Rendering**: XP bar now only displays when viewing your own profile.
     - **Privacy Enhancement**: Friends can no longer see detailed XP progress of other users.
